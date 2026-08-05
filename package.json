@@ -1,0 +1,29 @@
+{
+  "name": "@greyharbor/beacon",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run build -w @beacon/shared && npm run build -w @beacon/server && npm run build -w @beacon/web",
+    "check": "npm run build -w @beacon/shared && npm run check -w @beacon/server && npm run check -w @beacon/web",
+    "dev": "npm run dev -w @beacon/server",
+    "dev:web": "npm run dev -w @beacon/web",
+    "docs:check": "node scripts/check-docs.mjs",
+    "start": "npm run start -w @beacon/server",
+    "test": "npm run build -w @beacon/shared && npm run test -w @beacon/server",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown",
+    "ci": "npm run format:check && npm run docs:check && npm run check && npm test && npm run build"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  }
+}

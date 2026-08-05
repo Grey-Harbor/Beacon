@@ -1,0 +1,58 @@
+services:
+  drift:
+    image: ghcr.io/grey-harbor/drift:v0.1.0
+    volumes:
+      - drift-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  beacon:
+    build: .
+    ports:
+      - '127.0.0.1:3100:3100'
+    environment:
+      DRIFT_URL: http://drift:3000
+      DRIFT_API_KEY: ${DRIFT_API_KEY:?bootstrap Drift and set DRIFT_API_KEY}
+      BEACON_SESSION_SECRET: ${BEACON_SESSION_SECRET:?set BEACON_SESSION_SECRET}
+      BEACON_SETUP_TOKEN: ${BEACON_SETUP_TOKEN:?set BEACON_SETUP_TOKEN}
+      BEACON_SOURCE_TOKEN: ${BEACON_SOURCE_TOKEN:?set BEACON_SOURCE_TOKEN}
+      BEACON_EVENT_TOKEN: ${BEACON_EVENT_TOKEN:?set BEACON_EVENT_TOKEN}
+    volumes:
+      - beacon-data:/data
+    depends_on:
+      drift:
+        condition: service_healthy
+    restart: unless-stopped
+
+  compactor:
+    image: ghcr.io/grey-harbor/compactor:v0.2.0
+    ports:
+      - '8080:8080'
+    environment:
+      COMPACTOR_SOURCE_TYPE: http
+      COMPACTOR_EVENT_SINK_TYPE: http
+      COMPACTOR_HTTP_SOURCE_URL: http://beacon:3100/integrations/compactor/v1/resolve
+      COMPACTOR_HTTP_EVENT_SINK_URL: http://beacon:3100/integrations/compactor/v1/events
+      COMPACTOR_HTTP_SOURCE_BEARER_TOKEN: ${BEACON_SOURCE_TOKEN:?set BEACON_SOURCE_TOKEN}
+      COMPACTOR_HTTP_EVENT_SINK_BEARER_TOKEN: ${BEACON_EVENT_TOKEN:?set BEACON_EVENT_TOKEN}
+      COMPACTOR_REDIRECT_CACHE_TTL_SECONDS: 30
+      COMPACTOR_REDIRECT_CACHE_MAX_ENTRIES: 10000
+      RUST_LOG: compactor=info
+    depends_on:
+      beacon:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  drift-data:
+  beacon-data:
