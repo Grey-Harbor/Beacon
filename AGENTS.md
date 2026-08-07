@@ -63,6 +63,8 @@ Use the local-only, Git-ignored `PLAN.md` before significant features or archite
 
 Docker-based tests and smoke checks must remove every Docker asset they create after completion or failure, including containers, images, networks, volumes, and temporary files. Never remove pre-existing or user-owned Docker assets.
 
+Agents must also stop every development server, watcher, test process, and diagnostic process they start before handing work back. Confirm that ports are released and remove only assets the agent created; never stop or remove user-owned processes, containers, images, networks, volumes, or files.
+
 ## User experience
 
 Beacon is a productivity application, not a dashboard or marketing site. Preserve search-first navigation, restrained visual hierarchy, keyboard and touch accessibility, progressive disclosure, and one primary action per screen. Statistics belong with assets. Avoid KPI tiles, excessive cards, dark marketing palettes, flashy gradients, and unnecessary animation.
