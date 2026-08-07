@@ -16,6 +16,22 @@ set +a
 npm run dev
 ```
 
+### Precedence
+
+**Guaranteed:** Beacon has no `.env` precedence rule. It receives only the process environment supplied when it starts.
+
+For the local command above, `. ./.env` executes assignments in the current shell, so values in `.env` replace values that were already exported. To override one value for a local run, export it after sourcing `.env`:
+
+```sh
+set -a
+. ./.env
+set +a
+export BEACON_PORT=3200
+npm run dev
+```
+
+**Adapter-specific:** Docker Compose resolves `${VARIABLE}` values before it starts a container. For this interpolation, a value from the shell environment takes precedence over a value in `.env`; an explicit `--env-file` takes precedence over the default `.env`. See Docker's [environment-variable precedence reference](https://docs.docker.com/compose/how-tos/environment-variables/envvars-precedence/). In the bundled `compose.yaml`, `DRIFT_URL` and the Compactor settings are literal Compose values, so neither a shell variable nor `.env` changes them. The credential values interpolated with `${VARIABLE}` follow Compose's precedence.
+
 To generate all four Beacon credentials in a POSIX-compatible shell, run the helper from the repository root:
 
 ```sh

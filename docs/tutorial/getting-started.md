@@ -33,6 +33,8 @@ set +a
 npm run dev
 ```
 
+This sequence makes `.env` values win over values that were already exported. To override one setting for this run, export it after sourcing `.env`; [the environment reference](../reference/environment.md#precedence) covers local and Compose precedence.
+
 In another terminal, start the browser application:
 
 ```sh
