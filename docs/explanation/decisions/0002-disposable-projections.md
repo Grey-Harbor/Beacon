@@ -8,7 +8,7 @@ Accepted for v0.1.0.
 
 ## Context
 
-The productivity UI needs full-text resource search, the Compactor source needs efficient canonical URL lookup, and reports need event filtering and aggregation. Drift is authoritative but v0.1.0 does not provide every exact lookup, reverse-order, range, or aggregation operation needed for those reads.
+The productivity UI needs full-text resource search, the Compactor source needs efficient canonical URL lookup, and reports need event filtering and aggregation. Drift is authoritative but does not provide every exact lookup, reverse-order, range, or aggregation operation needed for those reads.
 
 ## Decision
 

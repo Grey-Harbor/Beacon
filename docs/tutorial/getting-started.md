@@ -1,10 +1,10 @@
 # Get started with Beacon locally
 
-Use this tutorial to run Beacon locally for the first time. Beacon provides the management API and browser interface, [Drift v0.1.0](https://github.com/Grey-Harbor/drift/tree/v0.1.0) stores the authoritative data, and [Compactor v0.2.0](https://github.com/Grey-Harbor/Compactor/tree/v0.2.0) executes redirects. You need Drift for this tutorial; you can add Compactor later when you want to test redirect traffic.
+Use this tutorial to run Beacon locally for the first time. Beacon provides the management API and browser interface, [Drift](https://github.com/Grey-Harbor/drift) stores the authoritative data, and [Compactor](https://github.com/Grey-Harbor/Compactor) executes redirects. You need Drift for this tutorial; you can add Compactor later when you want to test redirect traffic.
 
 ## Before you begin
 
-You need Node.js 22 or newer and a reachable Drift tenant with a read/write key. If you do not have those yet, follow Drift's [getting-started tutorial](https://github.com/Grey-Harbor/drift/blob/v0.1.0/docs/tutorial/getting-started.md) and [tenant and key tutorial](https://github.com/Grey-Harbor/drift/blob/v0.1.0/docs/tutorial/administering-tenants-and-keys.md).
+You need Node.js 22 or newer and a reachable Drift tenant with a read/write key. If you do not have those yet, follow Drift's [getting-started tutorial](https://github.com/Grey-Harbor/drift/blob/main/docs/tutorial/getting-started.md) and [tenant and key tutorial](https://github.com/Grey-Harbor/drift/blob/main/docs/tutorial/administering-tenants-and-keys.md).
 
 From the Beacon repository root, install dependencies and create your local configuration:
 
@@ -49,4 +49,4 @@ Then sign in at `http://localhost:5173`, create a redirect with a new destinatio
 
 ## What to do next
 
-Use [the self-hosting guide](../how-to/self-hosting.md) to run the complete Beacon, Drift, and Compactor stack. Compactor's [HTTP-adapter tutorial](https://github.com/Grey-Harbor/Compactor/blob/v0.2.0/docs/tutorials/http-adapters.md) explains the runtime side of Beacon's resolver and event-sink connection; [Beacon's API reference](../reference/api.md#compactor-integration) defines the matching endpoints. Do not reuse development secrets in a deployment.
+Use [the self-hosting guide](../how-to/self-hosting.md) to run the complete Beacon, Drift, and Compactor stack. Compactor's [HTTP-adapter tutorial](https://github.com/Grey-Harbor/Compactor/blob/main/docs/tutorials/http-adapters.md) explains the runtime side of Beacon's resolver and event-sink connection; [Beacon's API reference](../reference/api.md#compactor-integration) defines the matching endpoints. Do not reuse development secrets in a deployment.

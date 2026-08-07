@@ -32,7 +32,7 @@ docker compose ps
 curl --fail http://127.0.0.1:3100/health
 ```
 
-**Guaranteed:** the bundled Compose configuration pins Drift v0.1.0 and Compactor v0.2.0. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
+**Guaranteed:** the bundled Compose configuration runs Drift and Compactor. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
 
 **Recommended:** terminate HTTPS and authenticated operator access before exposing Beacon's management UI. Keep Drift private and expose Compactor, not Beacon, to redirect traffic. Configure proxy trust explicitly; Beacon does not infer it.
 

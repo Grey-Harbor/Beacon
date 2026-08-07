@@ -11,7 +11,7 @@ flowchart LR
   Browser["Next.js / React browser application"] -->|"same-origin management requests"| API["Fastify API"]
   Compactor["Compactor 0.2"] -->|"bearer-authenticated resolve + events"| API
   API --> Domain["Beacon domain services"]
-  Domain -->|"authoritative reads and writes"| Drift["Drift v0.1.0"]
+  Domain -->|"authoritative reads and writes"| Drift["Drift"]
   Domain -->|"disposable reads and updates"| Projection["SQLite projection database"]
 ```
 
@@ -75,7 +75,7 @@ Source canonicalization follows the Compactor-compatible rules: lowercase scheme
 - Drift credentials, session-signing secrets, setup tokens, and Compactor bearer tokens remain server-side secrets and must never be logged or returned to browsers.
 - The first setup call additionally requires the deployment-provided setup token and permanently closes once an admin vertex exists.
 - Deployment terminates HTTPS and decides proxy trust. Beacon does not infer a proxy configuration.
-- Compose pins Drift v0.1.0 and Compactor v0.2.0. Compactor's configured 30-second TTL means edits, disables, and archives can remain stale at the redirect runtime; a cached definition can also survive a Beacon or Drift outage.
+- The bundled Compose deployment runs Drift and Compactor. Compactor's configured 30-second TTL means edits, disables, and archives can remain stale at the redirect runtime; a cached definition can also survive a Beacon or Drift outage.
 - Drift volume backups are authoritative. The Beacon SQLite volume is disposable and rebuildable after recovery. v0.1.0 has no restore UI, multi-user recovery, targeted cache invalidation, multi-replica coordination, or retention tooling.
 
 ## Extension guidance

@@ -40,18 +40,18 @@ npm run dev
 
 ## Drift connection
 
-[Drift](https://github.com/Grey-Harbor/drift/tree/v0.1.0) is Beacon's authoritative persistence and tenant-isolation service. Beacon sends these values only from the server:
+[Drift](https://github.com/Grey-Harbor/drift) is Beacon's authoritative persistence and tenant-isolation service. Beacon sends these values only from the server:
 
-| Variable        | Required | Constraint | Definition                                                                                                                                                                                                                                                                                          |
-| --------------- | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DRIFT_URL`     | Yes      | Valid URL  | Base URL of the Drift service, such as `http://127.0.0.1:3000` for a local instance or `http://drift:3000` in the bundled Compose network. A trailing slash is accepted.                                                                                                                            |
-| `DRIFT_API_KEY` | Yes      | Non-empty  | Read/write bearer key for the one Drift tenant managed by this Beacon instance. Obtain it through Drift's [tenant and key workflow](https://github.com/Grey-Harbor/drift/blob/v0.1.0/docs/tutorial/administering-tenants-and-keys.md). Do not use an administrator key or a key for another tenant. |
+| Variable        | Required | Constraint | Definition                                                                                                                                                                                                                                                                                        |
+| --------------- | -------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DRIFT_URL`     | Yes      | Valid URL  | Base URL of the Drift service, such as `http://127.0.0.1:3000` for a local instance or `http://drift:3000` in the bundled Compose network. A trailing slash is accepted.                                                                                                                          |
+| `DRIFT_API_KEY` | Yes      | Non-empty  | Read/write bearer key for the one Drift tenant managed by this Beacon instance. Obtain it through Drift's [tenant and key workflow](https://github.com/Grey-Harbor/drift/blob/main/docs/tutorial/administering-tenants-and-keys.md). Do not use an administrator key or a key for another tenant. |
 
 Beacon validates the URL shape at startup, not Drift availability or key permissions. If Drift is unavailable during startup, Beacon can still answer `/health`, but its projection is stale and management operations cannot be considered operational until the Drift connection succeeds.
 
 ## Compactor settings in the bundled stack
 
-[Compactor](https://github.com/Grey-Harbor/Compactor/tree/v0.2.0) owns redirect execution, caching, and event production. Beacon does not read `COMPACTOR_*` variables. The bundled [`compose.yaml`](../../compose.yaml) sets them directly so Compactor uses Beacon's HTTP integrations:
+[Compactor](https://github.com/Grey-Harbor/Compactor) owns redirect execution, caching, and event production. Beacon does not read `COMPACTOR_*` variables. The bundled [`compose.yaml`](../../compose.yaml) sets them directly so Compactor uses Beacon's HTTP integrations:
 
 | Compactor variable                       | Bundled value or source | Purpose                                                                       |
 | ---------------------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
@@ -65,4 +65,4 @@ Beacon validates the URL shape at startup, not Drift availability or key permiss
 | `COMPACTOR_REDIRECT_CACHE_MAX_ENTRIES`   | `10000`                 | Caps the in-memory redirect-definition cache.                                 |
 | `RUST_LOG`                               | `compactor=info`        | Enables informational Compactor logs.                                         |
 
-These are deployment choices, not additional Beacon defaults. See Compactor's [configuration reference](https://github.com/Grey-Harbor/Compactor/blob/v0.2.0/docs/reference/configuration.md) before changing them. An operator must decide cache policy, public exposure, proxy behavior, credential scope, and acceptable propagation delay.
+These are deployment choices, not additional Beacon defaults. See Compactor's [configuration reference](https://github.com/Grey-Harbor/Compactor/blob/main/docs/reference/configuration.md) before changing them. An operator must decide cache policy, public exposure, proxy behavior, credential scope, and acceptable propagation delay.
