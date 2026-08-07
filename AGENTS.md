@@ -28,20 +28,21 @@ Do not infer redirect destinations, HTTP status policy, response headers, cache 
 
 ## Documentation
 
-Follow Diátaxis. Update an existing document before creating a new one, avoid duplication, cross-reference canonical material, and keep tutorials, how-to guides, reference, and explanation distinct. Use `docs/README.md` as the documentation index.
+Follow Diátaxis under `docs/`: tutorial, how-to, reference, and explanation. Keep the root `README.md` a short landing page. Use `docs/README.md` as the documentation index and `docs/STYLE.md` for page shape, examples, and the documentation review checklist.
+
+Write in the Grey Harbor voice: calm, practical, independent, and technically confident. Make documentation instructional first while preserving precise technical definitions. Update an existing document before creating a new one, preserve the tone and depth of the existing `docs/` tree, and cross-reference canonical material instead of duplicating contracts.
 
 For every documentation change:
 
-- Begin by telling readers when and why to use the page.
-- Prefer complete, copyable examples over fragments.
-- Define inputs, outputs, defaults, invariants, failures, ownership, and operational limits explicitly.
-- Distinguish guaranteed behavior from recommendations and adapter-specific behavior.
-- Include rollout, rollback, security, persistence, and observability guidance where operationally relevant.
-- Write for human and AI adopters. State which transformations are safe and which decisions automation must not infer.
-- Cross-reference canonical documents rather than duplicating contracts.
-- Run `npm run docs:check` and the production build before committing documentation changes.
-
-Format JSON and JSONL examples for human review. When showing JSONL, state that stored data uses one object per physical line.
+- Give each page one Diátaxis purpose, then begin by telling readers when and why to use it.
+- Prefer complete, copyable examples over fragments; state working directory, prerequisites, required headers, variables, and verification where relevant.
+- Format JSON for human review. When showing JSONL, pretty-print objects and state that stored or transmitted data uses one complete object per physical line.
+- Define inputs, outputs, defaults, invariants, failures, ownership, and operational limitations explicitly.
+- Label **Guaranteed** repository or versioned contract behavior, **Recommended** operational advice, and **Adapter-specific** implementation behavior so readers do not confuse them.
+- Include rollout, rollback, security, persistence, and observability guidance where operationally relevant. Do not imply that health checks, logs, or backups prove more than they do.
+- Write for human and AI adopters: identify safe mechanical transformations and decisions automation must not infer, including tenant ownership, redirect intent, production risk tolerance, credential scope, cache policy, retention policy, release readiness, and rollback timing.
+- Update `ARCHITECTURE.md`, `docs/reference/api.md`, and relevant explanation decision records when a behavior changes their canonical boundary or contract.
+- Run `npm run docs:check`, `npm run format:check`, and the production build before committing. `npm run docs:check` validates fenced JSON and local Markdown links; keep it aligned with the documentation tree.
 
 ## Planning
 

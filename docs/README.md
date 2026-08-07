@@ -1,25 +1,31 @@
 # Beacon documentation
 
-Use this index to find the right kind of Beacon documentation without mixing operational instructions, contract definitions, and architectural reasoning.
+Use this index to choose Beacon documentation by task. It follows Diátaxis so operational instructions, exact contracts, and architectural reasoning remain distinct; update the canonical page instead of duplicating content elsewhere.
 
-## Tutorials and getting started
+## Tutorials
 
-- [Project README](../README.md) — install Beacon, connect a Drift tenant, and start the development or Compose stack.
+Use tutorials to get a working local instance through a prescribed sequence.
+
+- [Tutorial index](./tutorial/README.md) — guided paths with a known starting state.
 
 ## How-to guides
 
-- [Self-hosting and operations](../README.md#self-hosting) — bootstrap Drift, configure secrets, deploy the stack, and understand backup and cache behavior.
+Use how-to guidance when operating a known Beacon deployment or completing a focused operational task.
+
+- [How-to index](./how-to/README.md) — focused operational procedures with recovery guidance.
 
 ## Reference
 
-- [HTTP API](./reference/api.md) — management routes, authentication rules, errors, and Compactor endpoints.
-- [Environment variables](../.env.example) — required runtime configuration names and development defaults.
+Use reference pages for exact names, inputs, outputs, defaults, and failure behavior.
+
+- [Reference index](./reference/README.md) — exact API and configuration contracts. Deployment values are supplied by the operator; Beacon does not discover or infer them.
 
 ## Explanation
 
-- [Architecture](../ARCHITECTURE.md) — system boundaries, request flow, data ownership, and projection behavior.
-- [Architecture decisions](./adr/README.md) — durable decisions for graph mapping, projections, integrations, authentication, and cache propagation.
+Use explanations to understand why Beacon has its boundaries and tradeoffs before changing its architecture or contracts.
+
+- [Explanation index](./explanation/README.md) — system boundaries and design tradeoffs.
 
 ## Release information
 
-- [Current release](../RELEASE.md) — release-facing behavior and annotated-tag description.
+Use [the current release description](../RELEASE.md) when preparing an annotated v0.1.0 tag or assessing release-facing behavior and known limits.
