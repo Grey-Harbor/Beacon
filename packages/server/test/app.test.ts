@@ -229,6 +229,37 @@ test('first-run setup closes and creates an authenticated session', async () => 
   projections.close();
 });
 
+test('configured browser origin permits the local development proxy only', async () => {
+  const projections = new ProjectionStore(':memory:');
+  const app = await createApp(
+    { ...config, BEACON_BROWSER_ORIGIN: 'http://localhost:5173' },
+    new BeaconService(new MemoryDrift(), projections),
+    projections,
+  );
+  const setup = await app.inject({
+    method: 'POST',
+    url: '/api/v1/setup',
+    headers: { host: '127.0.0.1:3100', origin: 'http://localhost:5173' },
+    payload: {
+      setupToken: config.BEACON_SETUP_TOKEN,
+      username: 'operator',
+      password: 'a-calm-password-123',
+    },
+  });
+  assert.equal(setup.statusCode, 200);
+
+  const rejected = await app.inject({
+    method: 'POST',
+    url: '/api/v1/session',
+    headers: { host: '127.0.0.1:3100', origin: 'http://localhost:5174' },
+    payload: { username: 'operator', password: 'a-calm-password-123' },
+  });
+  assert.equal(rejected.statusCode, 403);
+  assert.equal(rejected.json().error.code, 'invalid_origin');
+  await app.close();
+  projections.close();
+});
+
 test('integration credentials and unknown event fields are rejected', async () => {
   const projections = new ProjectionStore(':memory:');
   const app = await createApp(

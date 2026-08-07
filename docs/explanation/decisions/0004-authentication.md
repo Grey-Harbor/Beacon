@@ -12,7 +12,7 @@ Beacon is deployed for one pre-provisioned Drift tenant and has one administrato
 
 ## Decision
 
-First-run creation requires both a deployment-provided setup token and user-supplied valid username/password. Beacon stores one normalized username and Argon2id password hash in a Drift admin vertex. Browser authentication uses signed, expiring, HTTP-only, same-site cookies with a deployment-provided session secret. Mutation endpoints require a valid session and enforce same-origin requests when an Origin header is supplied. Compactor uses separate bearer credentials rather than browser sessions.
+First-run creation requires both a deployment-provided setup token and user-supplied valid username/password. Beacon stores one normalized username and Argon2id password hash in a Drift admin vertex. Browser authentication uses signed, expiring, HTTP-only, same-site cookies with a deployment-provided session secret. Mutation endpoints require a valid session and enforce same-origin requests when an Origin header is supplied. `BEACON_BROWSER_ORIGIN` lets an operator authorize one exact browser origin when it differs from Beacon's received request host; it does not trust a forwarded-header claim. Compactor uses separate bearer credentials rather than browser sessions.
 
 ## Consequences
 

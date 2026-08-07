@@ -20,7 +20,7 @@ Generate all four Beacon credentials in a POSIX-compatible shell. This exports t
 . scripts/generate-beacon-secrets.sh
 ```
 
-Then edit `.env`: set `DRIFT_URL` to the Drift base URL, set `DRIFT_API_KEY` to the tenant key, and paste all four generated values. See [the environment-variable reference](../reference/environment.md) for every variable, default, constraint, and rotation effect.
+Then edit `.env`: set `DRIFT_URL` to the Drift base URL, set `DRIFT_API_KEY` to the tenant key, and paste all four generated values. Keep `BEACON_BROWSER_ORIGIN=http://localhost:5173` for the local web application; it authorizes its requests to the API at port `3100`. See [the environment-variable reference](../reference/environment.md) for every variable, default, constraint, and rotation effect.
 
 ## Start Beacon
 

@@ -9,7 +9,7 @@ Beacon is the management boundary between Drift and Compactor. It is a single-te
 ```mermaid
 flowchart LR
   Browser["Next.js / React browser application"] -->|"same-origin management requests"| API["Fastify API"]
-  Compactor["Compactor 0.2"] -->|"bearer-authenticated resolve + events"| API
+  Compactor["Compactor"] -->|"bearer-authenticated resolve + events"| API
   API --> Domain["Beacon domain services"]
   Domain -->|"authoritative reads and writes"| Drift["Drift"]
   Domain -->|"disposable reads and updates"| Projection["SQLite projection database"]
@@ -34,7 +34,7 @@ Do not move these responsibilities for convenience. In particular, an operator m
 
 The Next.js App Router produces a static React application. Fastify serves that exported application in production. In development, Next proxies `/api/*` and `/integrations/*` to Fastify and falls back to the browser entry route for client editor paths.
 
-Browser sessions are signed, expiring, HTTP-only, same-site cookies. Management mutations require an authenticated session and reject cross-origin submissions when an `Origin` header is present. Versioned redirect and destination writes surface Drift conflicts as `409`; callers must reload the current record instead of retrying a blind overwrite.
+Browser sessions are signed, expiring, HTTP-only, same-site cookies. Management mutations require an authenticated session and reject cross-origin submissions when an `Origin` header is present. When an operator configures `BEACON_BROWSER_ORIGIN`, Beacon accepts only that exact browser origin; otherwise it requires the origin host to match the request host. This keeps the local Next.js development proxy explicit without trusting forwarded headers. Versioned redirect and destination writes surface Drift conflicts as `409`; callers must reload the current record instead of retrying a blind overwrite.
 
 ### Authoritative mutation and projection update
 

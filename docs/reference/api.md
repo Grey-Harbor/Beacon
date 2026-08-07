@@ -2,7 +2,7 @@
 
 Use this page when integrating a browser client, configuring Compactor, or diagnosing an HTTP response. It defines implemented v0.1.0 routes, exact request validation, authentication, output shapes, and failures; it is the canonical Beacon-side reference for external contracts.
 
-All management routes are same-origin under `/api/v1` and return JSON. Browser mutations require an authenticated `beacon_session` HTTP-only cookie and reject a present `Origin` header whose host differs from the request host. API request bodies are limited to 256 KiB. Fastify applies a global limit of 180 requests per minute, with stricter setup and login limits noted below.
+All management routes are same-origin under `/api/v1` and return JSON. Browser mutations require an authenticated `beacon_session` HTTP-only cookie and reject a present `Origin` header unless it matches `BEACON_BROWSER_ORIGIN` when configured; otherwise its host must equal the request host. API request bodies are limited to 256 KiB. Fastify applies a global limit of 180 requests per minute, with stricter setup and login limits noted below.
 
 **Guaranteed** identifies the Beacon v0.1.0 contract. **Adapter-specific** identifies behavior caused by Drift or SQLite integration. **Recommended** identifies operational advice that an operator may deliberately adapt.
 
