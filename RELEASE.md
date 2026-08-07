@@ -1,5 +1,7 @@
 # Beacon v0.1.0
 
+Use this page when preparing the annotated `v0.1.0` release tag or assessing the current release's supported behavior and limits. It is the canonical release summary; use [the documentation index](./docs/README.md) for operational instructions and exact contracts.
+
 Beacon v0.1.0 is the first end-to-end management application built on Drift and Compactor.
 
 ## Highlights
