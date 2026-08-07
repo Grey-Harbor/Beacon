@@ -92,6 +92,8 @@ Verbatim cleanup is required so Git preserves Markdown headings in the tag descr
 
 Treat history as an engineering artifact. Develop every update on a working branch; never make new changes directly on `main`. Start from an up-to-date `main`, create a short descriptive branch such as `feat/search-history`, `fix/source-lookup`, or `docs/deployment`, and do not prefix branch names with `codex/` or another agent name.
 
+When GitHub CLI authentication reports an invalid token, first try the existing system credential helper or Keychain with a process-scoped credential. Never print, persist, or commit that credential. Ask the user to reauthenticate only after that recovery path fails.
+
 Use this workflow for every change:
 
 1. Create or switch to the working branch before editing.
