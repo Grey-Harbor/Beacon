@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api';
 import { Loading } from './components';
+import { ActivityPage } from './screens/ActivityScreen';
 import { LoginPage, SetupPage } from './screens/AuthScreens';
 import { DestinationEditorPage } from './screens/DestinationEditorScreen';
 import { HomePage } from './screens/HomeScreen';
@@ -40,6 +41,7 @@ export function App() {
   if (path === '/destinations/new' || /^\/destinations\/[^/]+\/edit$/.test(path)) {
     return <DestinationEditorPage />;
   }
+  if (path === '/activity') return <ActivityPage />;
   if (path === '/reports') return <ReportsPage />;
   if (path === '/settings') return <SettingsPage />;
   return <HomePage session={session} onLogout={refreshSession} />;
