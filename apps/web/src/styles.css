@@ -484,6 +484,14 @@ kbd {
   background: #eef2ed;
   color: var(--accent);
 }
+.activity-dot.destination {
+  background: var(--warm);
+  color: #7d6540;
+}
+.activity-type {
+  color: var(--ink);
+  font-weight: 700;
+}
 .activity-row time {
   color: var(--muted);
   font-size: 13px;

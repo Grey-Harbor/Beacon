@@ -4,7 +4,6 @@ import {
   BarChart3,
   ChevronRight,
   CirclePlus,
-  FilePenLine,
   Link2,
   LogOut,
   Menu,
@@ -188,12 +187,13 @@ function RecentActivity({ activity }: { activity: ActivityRecord[] }) {
               className="activity-row"
               to={`/${item.resourceType}s/${item.resourceId}/edit`}
             >
-              <span className="activity-dot">
-                <FilePenLine />
+              <span className={`activity-dot ${item.resourceType}`} aria-hidden="true">
+                {item.resourceType === 'redirect' ? <Link2 /> : <Target />}
               </span>
               <span>
                 <strong>{item.resourceTitle}</strong>
                 <small>
+                  <span className="activity-type">{capitalize(item.resourceType)}</span> ·{' '}
                   {capitalize(item.action)} by {item.actor}
                 </small>
               </span>
