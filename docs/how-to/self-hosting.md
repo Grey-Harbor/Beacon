@@ -13,6 +13,8 @@ cp .env.example .env
 
 Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
 
+Use [the environment-variable reference](../reference/environment.md) for every value, validation constraint, default, and rotation effect.
+
 ## Deploy the stack
 
 Bootstrap the pre-provisioned Drift tenant first:

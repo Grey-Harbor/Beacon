@@ -1,24 +1,29 @@
 # Get started with Beacon locally
 
-Use this tutorial when developing Beacon against a reachable Drift v0.1.0 tenant. It gives you a known local starting state: Fastify runs the management API and Next.js proxies browser API requests to it.
+Use this tutorial to run Beacon locally for the first time. Beacon provides the management API and browser interface, [Drift v0.1.0](https://github.com/Grey-Harbor/drift/tree/v0.1.0) stores the authoritative data, and [Compactor v0.2.0](https://github.com/Grey-Harbor/Compactor/tree/v0.2.0) executes redirects. You need Drift for this tutorial; you can add Compactor later when you want to test redirect traffic.
 
 ## Before you begin
 
-You need Node.js 22 or newer, a Drift v0.1.0 tenant, its read/write tenant key, and four independently generated Beacon secrets. Work from the repository root:
+You need Node.js 22 or newer and a reachable Drift tenant with a read/write key. If you do not have those yet, follow Drift's [getting-started tutorial](https://github.com/Grey-Harbor/drift/blob/v0.1.0/docs/tutorial/getting-started.md) and [tenant and key tutorial](https://github.com/Grey-Harbor/drift/blob/v0.1.0/docs/tutorial/administering-tenants-and-keys.md).
+
+From the Beacon repository root, install dependencies and create your local configuration:
 
 ```sh
 cd /path/to/beacon
+npm ci
 cp .env.example .env
 ```
 
-Set `DRIFT_URL`, `DRIFT_API_KEY`, `BEACON_SESSION_SECRET`, `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` in `.env`. Use high-entropy values that cannot be mistaken for production placeholders. The complete variable names and development defaults are in [the environment reference](../../.env.example).
+Edit `.env`: set `DRIFT_URL` to the Drift base URL, set `DRIFT_API_KEY` to the tenant key, and replace the four Beacon credential placeholders with independent random values. See [the environment-variable reference](../reference/environment.md) for every variable, default, constraint, and rotation effect.
 
-## Start the services
+## Start Beacon
 
-Install dependencies and start Fastify in one terminal:
+Beacon reads the process environment; it does not load `.env` itself. In one terminal, export the file and start the API:
 
 ```sh
-npm install
+set -a
+. ./.env
+set +a
 npm run dev
 ```
 
@@ -40,13 +45,8 @@ Confirm Fastify is reachable:
 curl --fail http://127.0.0.1:3100/health
 ```
 
-Then sign in at `http://localhost:5173`, create a redirect with a new destination, and confirm it appears in search. Run the complete local verification suite before proposing a change:
-
-```sh
-npm run ci
-npm audit --omit=dev --audit-level=high
-```
+Then sign in at `http://localhost:5173`, create a redirect with a new destination, and confirm it appears in search.
 
 ## What to do next
 
-Use [the HTTP API reference](../reference/api.md) for exact browser and Compactor contracts. Use [the self-hosting guide](../how-to/self-hosting.md) for Compose deployment, backup, and recovery. Do not reuse development secrets in a deployment; an operator chooses tenant mapping, public proxy configuration, token scope, and cache policy.
+Use [the self-hosting guide](../how-to/self-hosting.md) to run the complete Beacon, Drift, and Compactor stack. Compactor's [HTTP-adapter tutorial](https://github.com/Grey-Harbor/Compactor/blob/v0.2.0/docs/tutorials/http-adapters.md) explains the runtime side of Beacon's resolver and event-sink connection; [Beacon's API reference](../reference/api.md#compactor-integration) defines the matching endpoints. Do not reuse development secrets in a deployment.
