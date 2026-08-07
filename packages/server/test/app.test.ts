@@ -93,8 +93,8 @@ class MemoryDrift implements DriftPort {
     const edges = this.edges.filter((edge) => edge.fromVertexId === id && edge.type === edgeType);
     return {
       edges,
-      vertices: this.vertices.filter((vertex) =>
-        edges.some((edge) => edge.toVertexId === vertex.id),
+      vertices: this.vertices.filter(
+        (vertex) => vertex.id === id || edges.some((edge) => edge.toVertexId === vertex.id),
       ),
     };
   }
@@ -130,6 +130,8 @@ test('Compactor endpoints resolve exact records and persist exact events', async
     statusCode: 308,
     responseHeaders: { 'Cache-Control': 'public' },
   });
+  const retrieved = await service.getRedirect(redirect.id);
+  assert.equal(retrieved.destination.id, destination.id);
   const app = await createApp(config, service, projections);
   const found = await app.inject({
     method: 'GET',

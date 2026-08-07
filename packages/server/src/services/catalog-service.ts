@@ -121,10 +121,16 @@ export class CatalogService {
       this.drift.getVertex(id),
       this.drift.getOutgoing(id, 'points_to'),
     ]);
-    if (outgoing.edges.length !== 1 || outgoing.vertices.length !== 1) {
+    if (outgoing.edges.length !== 1) {
       throw new AppError(502, 'invalid_graph', 'Redirect must point to exactly one destination');
     }
-    return redirectFromVertices(redirect, outgoing.vertices[0]!);
+    const destination = outgoing.vertices.find(
+      (vertex) => vertex.id === outgoing.edges[0]!.toVertexId,
+    );
+    if (!destination) {
+      throw new AppError(502, 'invalid_graph', 'Redirect must point to exactly one destination');
+    }
+    return redirectFromVertices(redirect, destination);
   }
 
   async createRedirect(raw: RedirectInput, actor = 'admin') {

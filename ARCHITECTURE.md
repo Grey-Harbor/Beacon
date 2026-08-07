@@ -64,7 +64,7 @@ Compactor sends a strict, bearer-authenticated event object to `POST /integratio
 
 - `beacon.redirect` vertices store title, tenant-unique editable slug, active/disabled status, canonical source URL, redirect status code, and response headers.
 - `beacon.destination` vertices store title and destination URL. Many redirects can target one destination.
-- An active redirect has exactly one outgoing `points_to` edge. A destination cannot be archived while active redirects refer to it.
+- An active redirect has exactly one outgoing `points_to` edge. Drift outbound traversals can include both the redirect and destination vertices, so Beacon identifies the destination by the edge's `toVertexId` rather than by traversal result order or count. A destination cannot be archived while active redirects refer to it.
 - `beacon.event` and `beacon.activity` are immutable, unconnected vertices. Events preserve the strict Compactor payload; activities preserve the actor, action, resource identity, timestamp, and before/after version metadata.
 - Archiving uses Drift soft deletion. Disabling changes redirect status. Neither is inferred from a cache response or projection row.
 
