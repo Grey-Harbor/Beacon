@@ -16,10 +16,10 @@ set +a
 npm run dev
 ```
 
-To generate all four Beacon credentials in `zsh` or `bash`, run the helper from the repository root:
+To generate all four Beacon credentials in a POSIX-compatible shell, run the helper from the repository root:
 
 ```sh
-source <(npm run --silent secrets:generate)
+. scripts/generate-beacon-secrets.sh
 ```
 
 It exports `BEACON_SESSION_SECRET`, `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` into the current terminal and prints them. Copy the values into `.env` before starting Beacon; sourcing `.env` later replaces the current terminal values. Treat the output as a secret and do not send it to logs or version control.

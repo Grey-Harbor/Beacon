@@ -16,7 +16,7 @@
     "dev": "npm run dev -w @beacon/server",
     "dev:web": "npm run dev -w @beacon/web",
     "docs:check": "node scripts/check-docs.mjs",
-    "secrets:generate": "node scripts/generate-beacon-secrets.mjs",
+    "secrets:generate": "sh scripts/generate-beacon-secrets.sh",
     "start": "npm run start -w @beacon/server",
     "test": "npm run build -w @beacon/shared && node --test scripts/generate-beacon-secrets.test.mjs && npm run test -w @beacon/server",
     "format": "prettier --write . --ignore-unknown",

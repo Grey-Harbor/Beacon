@@ -14,10 +14,10 @@ npm ci
 cp .env.example .env
 ```
 
-Generate all four Beacon credentials in `zsh` or `bash`. This exports them into the current terminal and prints them; copy the printed values into `.env`.
+Generate all four Beacon credentials in a POSIX-compatible shell. This exports them into the current terminal and prints them; copy the printed values into `.env`.
 
 ```sh
-source <(npm run --silent secrets:generate)
+. scripts/generate-beacon-secrets.sh
 ```
 
 Then edit `.env`: set `DRIFT_URL` to the Drift base URL, set `DRIFT_API_KEY` to the tenant key, and paste all four generated values. See [the environment-variable reference](../reference/environment.md) for every variable, default, constraint, and rotation effect.
