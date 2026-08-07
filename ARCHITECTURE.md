@@ -9,9 +9,9 @@ Beacon is the management boundary between Drift and Compactor. It is a single-te
 ```mermaid
 flowchart LR
   Browser["Next.js / React browser application"] -->|"same-origin management requests"| API["Fastify API"]
-  Compactor["Compactor 0.2"] -->|"bearer-authenticated resolve + events"| API
+  Compactor["Compactor"] -->|"bearer-authenticated resolve + events"| API
   API --> Domain["Beacon domain services"]
-  Domain -->|"authoritative reads and writes"| Drift["Drift v0.1.0"]
+  Domain -->|"authoritative reads and writes"| Drift["Drift"]
   Domain -->|"disposable reads and updates"| Projection["SQLite projection database"]
 ```
 
@@ -34,7 +34,7 @@ Do not move these responsibilities for convenience. In particular, an operator m
 
 The Next.js App Router produces a static React application. Fastify serves that exported application in production. In development, Next proxies `/api/*` and `/integrations/*` to Fastify and falls back to the browser entry route for client editor paths.
 
-Browser sessions are signed, expiring, HTTP-only, same-site cookies. Management mutations require an authenticated session and reject cross-origin submissions when an `Origin` header is present. Versioned redirect and destination writes surface Drift conflicts as `409`; callers must reload the current record instead of retrying a blind overwrite.
+Browser sessions are signed, expiring, HTTP-only, same-site cookies. Management mutations require an authenticated session and reject cross-origin submissions when an `Origin` header is present. When an operator configures `BEACON_BROWSER_ORIGIN`, Beacon accepts only that exact browser origin; otherwise it requires the origin host to match the request host. This keeps the local Next.js development proxy explicit without trusting forwarded headers. Versioned redirect and destination writes surface Drift conflicts as `409`; callers must reload the current record instead of retrying a blind overwrite.
 
 ### Authoritative mutation and projection update
 
@@ -64,7 +64,7 @@ Compactor sends a strict, bearer-authenticated event object to `POST /integratio
 
 - `beacon.redirect` vertices store title, tenant-unique editable slug, active/disabled status, canonical source URL, redirect status code, and response headers.
 - `beacon.destination` vertices store title and destination URL. Many redirects can target one destination.
-- An active redirect has exactly one outgoing `points_to` edge. A destination cannot be archived while active redirects refer to it.
+- An active redirect has exactly one outgoing `points_to` edge. Drift outbound traversals can include both the redirect and destination vertices, so Beacon identifies the destination by the edge's `toVertexId` rather than by traversal result order or count. A destination cannot be archived while active redirects refer to it.
 - `beacon.event` and `beacon.activity` are immutable, unconnected vertices. Events preserve the strict Compactor payload; activities preserve the actor, action, resource identity, timestamp, and before/after version metadata.
 - Archiving uses Drift soft deletion. Disabling changes redirect status. Neither is inferred from a cache response or projection row.
 
@@ -75,7 +75,7 @@ Source canonicalization follows the Compactor-compatible rules: lowercase scheme
 - Drift credentials, session-signing secrets, setup tokens, and Compactor bearer tokens remain server-side secrets and must never be logged or returned to browsers.
 - The first setup call additionally requires the deployment-provided setup token and permanently closes once an admin vertex exists.
 - Deployment terminates HTTPS and decides proxy trust. Beacon does not infer a proxy configuration.
-- Compose pins Drift v0.1.0 and Compactor v0.2.0. Compactor's configured 30-second TTL means edits, disables, and archives can remain stale at the redirect runtime; a cached definition can also survive a Beacon or Drift outage.
+- The bundled Compose deployment runs Drift and Compactor. Compactor's configured 30-second TTL means edits, disables, and archives can remain stale at the redirect runtime; a cached definition can also survive a Beacon or Drift outage.
 - Drift volume backups are authoritative. The Beacon SQLite volume is disposable and rebuildable after recovery. v0.1.0 has no restore UI, multi-user recovery, targeted cache invalidation, multi-replica coordination, or retention tooling.
 
 ## Extension guidance

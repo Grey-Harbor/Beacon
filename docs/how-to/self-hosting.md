@@ -11,7 +11,9 @@ cd /path/to/beacon
 cp .env.example .env
 ```
 
-Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
+Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Set `BEACON_BROWSER_ORIGIN` to the exact public HTTPS origin of the management UI, such as `https://beacon.example.com`; do not use the internal container address or add a path. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
+
+Use [the environment-variable reference](../reference/environment.md) for every value, validation constraint, default, and rotation effect.
 
 ## Deploy the stack
 
@@ -30,7 +32,7 @@ docker compose ps
 curl --fail http://127.0.0.1:3100/health
 ```
 
-**Guaranteed:** the bundled Compose configuration pins Drift v0.1.0 and Compactor v0.2.0. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
+**Guaranteed:** the bundled Compose configuration runs Drift and Compactor. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
 
 **Recommended:** terminate HTTPS and authenticated operator access before exposing Beacon's management UI. Keep Drift private and expose Compactor, not Beacon, to redirect traffic. Configure proxy trust explicitly; Beacon does not infer it.
 

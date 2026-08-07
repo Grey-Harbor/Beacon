@@ -37,12 +37,18 @@ export async function createApp(
       request.headers.origin
     ) {
       let originHost = '';
+      let origin = '';
       try {
-        originHost = new URL(request.headers.origin).host;
+        const parsedOrigin = new URL(request.headers.origin);
+        originHost = parsedOrigin.host;
+        origin = parsedOrigin.origin;
       } catch {
         // Rejected below.
       }
-      if (originHost !== request.headers.host) {
+      const allowedOrigin = config.BEACON_BROWSER_ORIGIN
+        ? new URL(config.BEACON_BROWSER_ORIGIN).origin
+        : null;
+      if (allowedOrigin ? origin !== allowedOrigin : originHost !== request.headers.host) {
         throw new AppError(403, 'invalid_origin', 'Request origin is not allowed');
       }
     }

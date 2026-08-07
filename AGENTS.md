@@ -63,6 +63,8 @@ Use the local-only, Git-ignored `PLAN.md` before significant features or archite
 
 Docker-based tests and smoke checks must remove every Docker asset they create after completion or failure, including containers, images, networks, volumes, and temporary files. Never remove pre-existing or user-owned Docker assets.
 
+Agents must also stop every development server, watcher, test process, and diagnostic process they start before handing work back. Confirm that ports are released and remove only assets the agent created; never stop or remove user-owned processes, containers, images, networks, volumes, or files.
+
 ## User experience
 
 Beacon is a productivity application, not a dashboard or marketing site. Preserve search-first navigation, restrained visual hierarchy, keyboard and touch accessibility, progressive disclosure, and one primary action per screen. Statistics belong with assets. Avoid KPI tiles, excessive cards, dark marketing palettes, flashy gradients, and unnecessary animation.
@@ -89,6 +91,8 @@ Verbatim cleanup is required so Git preserves Markdown headings in the tag descr
 ## Git standards
 
 Treat history as an engineering artifact. Develop every update on a working branch; never make new changes directly on `main`. Start from an up-to-date `main`, create a short descriptive branch such as `feat/search-history`, `fix/source-lookup`, or `docs/deployment`, and do not prefix branch names with `codex/` or another agent name.
+
+When GitHub CLI authentication reports an invalid token, first try the existing system credential helper or Keychain with a process-scoped credential. Never print, persist, or commit that credential. Ask the user to reauthenticate only after that recovery path fails.
 
 Use this workflow for every change:
 
