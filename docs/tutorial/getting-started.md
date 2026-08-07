@@ -14,13 +14,13 @@ npm ci
 cp .env.example .env
 ```
 
-Generate the session secret and setup token in `zsh` or `bash`. This exports both values into the current terminal and prints them; copy the printed values into `.env`.
+Generate all four Beacon credentials in `zsh` or `bash`. This exports them into the current terminal and prints them; copy the printed values into `.env`.
 
 ```sh
 source <(npm run --silent secrets:generate)
 ```
 
-Then edit `.env`: set `DRIFT_URL` to the Drift base URL, set `DRIFT_API_KEY` to the tenant key, paste the generated values, and replace the source and event token placeholders with independent random values. See [the environment-variable reference](../reference/environment.md) for every variable, default, constraint, and rotation effect.
+Then edit `.env`: set `DRIFT_URL` to the Drift base URL, set `DRIFT_API_KEY` to the tenant key, and paste all four generated values. See [the environment-variable reference](../reference/environment.md) for every variable, default, constraint, and rotation effect.
 
 ## Start Beacon
 
