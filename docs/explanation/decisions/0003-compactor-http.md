@@ -1,6 +1,6 @@
-# ADR 0003: Compactor HTTP boundary
+# Compactor HTTP boundary
 
-Use this decision when modifying redirect resolution or event ingestion. It preserves exact Compactor 0.2 source and event-sink semantics instead of treating Beacon as a new redirect runtime.
+Use this decision record when modifying redirect resolution or event ingestion. It preserves exact Compactor 0.2 source and event-sink semantics instead of treating Beacon as a new redirect runtime.
 
 ## Status
 
@@ -16,4 +16,4 @@ Beacon exposes bearer-authenticated `GET /integrations/compactor/v1/resolve` and
 
 ## Consequences
 
-Browser sessions cannot call these integration endpoints, and Compactor never receives Drift credentials. Contract changes require source fixtures/tests plus synchronized updates to [the HTTP API reference](../reference/api.md) and [Architecture](../../ARCHITECTURE.md). Event reporting updates happen after Drift persistence, so a projection failure does not invalidate a successful acknowledgement. Compactor has no Beacon-managed durable spool or retry policy: a sink outage can lose events.
+Browser sessions cannot call these integration endpoints, and Compactor never receives Drift credentials. Contract changes require source fixtures/tests plus synchronized updates to [the HTTP API reference](../../reference/api.md) and [Architecture](../../../ARCHITECTURE.md). Event reporting updates happen after Drift persistence, so a projection failure does not invalidate a successful acknowledgement. Compactor has no Beacon-managed durable spool or retry policy: a sink outage can lose events.

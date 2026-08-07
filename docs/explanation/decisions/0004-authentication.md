@@ -1,6 +1,6 @@
-# ADR 0004: Single-administrator authentication
+# Single-administrator authentication
 
-Use this decision when changing setup, credentials, session handling, or browser mutation protection. It defines the intentionally narrow v0.1.0 identity model and its security boundaries.
+Use this decision record when changing setup, credentials, session handling, or browser mutation protection. It defines the intentionally narrow v0.1.0 identity model and its security boundaries.
 
 ## Status
 
@@ -16,4 +16,4 @@ First-run creation requires both a deployment-provided setup token and user-supp
 
 ## Consequences
 
-There is no durable session table, role model, recovery workflow, password-reset flow, or multi-user support. Rotating the session secret invalidates active sessions; rotating the setup token does not reopen setup after the admin vertex exists. Operators must protect all deployment secrets and terminate HTTPS in front of production Beacon. See [the identity reference](../reference/api.md#identity-and-session-routes) for exact inputs and cookie behavior.
+There is no durable session table, role model, recovery workflow, password-reset flow, or multi-user support. Rotating the session secret invalidates active sessions; rotating the setup token does not reopen setup after the admin vertex exists. Operators must protect all deployment secrets and terminate HTTPS in front of production Beacon. See [the identity reference](../../reference/api.md#identity-and-session-routes) for exact inputs and cookie behavior.

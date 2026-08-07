@@ -41,7 +41,7 @@ For every documentation change:
 - Label **Guaranteed** repository or versioned contract behavior, **Recommended** operational advice, and **Adapter-specific** implementation behavior so readers do not confuse them.
 - Include rollout, rollback, security, persistence, and observability guidance where operationally relevant. Do not imply that health checks, logs, or backups prove more than they do.
 - Write for human and AI adopters: identify safe mechanical transformations and decisions automation must not infer, including tenant ownership, redirect intent, production risk tolerance, credential scope, cache policy, retention policy, release readiness, and rollback timing.
-- Update `ARCHITECTURE.md`, `docs/reference/api.md`, and relevant ADRs when a behavior changes their canonical boundary or contract.
+- Update `ARCHITECTURE.md`, `docs/reference/api.md`, and relevant explanation decision records when a behavior changes their canonical boundary or contract.
 - Run `npm run docs:check`, `npm run format:check`, and the production build before committing. `npm run docs:check` validates fenced JSON and local Markdown links; keep it aligned with the documentation tree.
 
 ## Planning

@@ -1,6 +1,6 @@
-# ADR 0001: Drift graph mapping
+# Drift graph mapping
 
-Use this decision when changing redirect, destination, event, activity, or administrator persistence. It keeps Drift authoritative while making Beacon's required relationships and lifecycle rules explicit.
+Use this decision record when changing redirect, destination, event, activity, or administrator persistence. It keeps Drift authoritative while making Beacon's required relationships and lifecycle rules explicit.
 
 ## Status
 
@@ -21,4 +21,4 @@ Beacon needs reusable destinations, one redirect target at a time, optimistic ve
 
 ## Consequences
 
-Drift reads are required for authoritative management and resolution. Archiving a redirect or destination means Drift soft deletion, not an inferred local state. A destination cannot be archived while redirect edges still reference it. Events and activities intentionally have no graph edge to redirects, so downstream consumers must not assume relationship traversal exists. See [Architecture](../../ARCHITECTURE.md#data-model-and-lifecycle-invariants) for the implemented record fields and [ADR 0002](./0002-disposable-projections.md) for derived SQLite rows.
+Drift reads are required for authoritative management and resolution. Archiving a redirect or destination means Drift soft deletion, not an inferred local state. A destination cannot be archived while redirect edges still reference it. Events and activities intentionally have no graph edge to redirects, so downstream consumers must not assume relationship traversal exists. See [Architecture](../../../ARCHITECTURE.md#data-model-and-lifecycle-invariants) for the implemented record fields and [disposable read projections](./0002-disposable-projections.md) for derived SQLite rows.

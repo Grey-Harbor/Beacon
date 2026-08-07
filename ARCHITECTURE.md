@@ -80,6 +80,6 @@ Source canonicalization follows the Compactor-compatible rules: lowercase scheme
 
 ## Extension guidance
 
-Before adding an adapter, policy, or storage path, establish the requirement and update this page, [the API reference](./docs/reference/api.md), and applicable ADRs. Safe extensions retain Drift-first writes, typed gateway validation, browser/server credential separation, and a rebuildable projection. Do not automate a tenant choice, archival operation, cache invalidation claim, proxy trust setting, retention decision, or redirect definition that an operator or upstream authority has not supplied.
+Before adding an adapter, policy, or storage path, establish the requirement and update this page, [the API reference](./docs/reference/api.md), and applicable [architecture decisions](./docs/explanation/decisions/README.md). Safe extensions retain Drift-first writes, typed gateway validation, browser/server credential separation, and a rebuildable projection. Do not automate a tenant choice, archival operation, cache invalidation claim, proxy trust setting, retention decision, or redirect definition that an operator or upstream authority has not supplied.
 
-See [the ADR index](./docs/adr/README.md) for the decisions this architecture records and [the operations guide](./docs/how-to/self-hosting.md) for deployment and recovery procedures.
+See [the architecture decision records](./docs/explanation/decisions/README.md) for the decisions this architecture records and [the operations guide](./docs/how-to/self-hosting.md) for deployment and recovery procedures.
