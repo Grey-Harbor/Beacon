@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { api } from './api';
-import { Loading } from './components';
+import { ErrorMessage, Loading } from './components';
+import { errorMessage } from './presentation';
 import { LoginPage, SetupPage } from './screens/AuthScreens';
 import { DestinationEditorPage } from './screens/DestinationEditorScreen';
 import { HomePage } from './screens/HomeScreen';
@@ -17,20 +18,48 @@ export function App() {
   const [ready, setReady] = useState(false);
   const [configured, setConfigured] = useState(false);
   const [session, setSession] = useState<Session>({ authenticated: false, user: null });
+  const [loadError, setLoadError] = useState('');
 
   async function refreshSession() {
-    const [setup, currentSession] = await Promise.all([
-      api<{ configured: boolean }>('/api/v1/setup/status'),
-      api<Session>('/api/v1/session'),
-    ]);
-    setConfigured(setup.configured);
-    setSession(currentSession);
-    setReady(true);
+    setReady(false);
+    setLoadError('');
+    try {
+      const [setup, currentSession] = await Promise.all([
+        api<{ configured: boolean }>('/api/v1/setup/status'),
+        api<Session>('/api/v1/session'),
+      ]);
+      setConfigured(setup.configured);
+      setSession(currentSession);
+    } catch (reason) {
+      setLoadError(errorMessage(reason));
+    } finally {
+      setReady(true);
+    }
   }
 
   useEffect(() => void refreshSession(), []);
 
   if (!ready) return <Loading />;
+  if (loadError) {
+    return (
+      <main className="centered-page">
+        <div className="brand-mark">B</div>
+        <section className="stack connection-error">
+          <div>
+            <p className="eyebrow">Connection unavailable</p>
+            <h1>Beacon could not load the workspace</h1>
+            <p className="muted">
+              Confirm that Drift is running and reachable from the Beacon server, then try again.
+            </p>
+          </div>
+          <ErrorMessage>{loadError}</ErrorMessage>
+          <button className="primary-button" onClick={refreshSession}>
+            Try again
+          </button>
+        </section>
+      </main>
+    );
+  }
   if (!configured) return <SetupPage onComplete={refreshSession} />;
   if (!session.authenticated) return <LoginPage onComplete={refreshSession} />;
 

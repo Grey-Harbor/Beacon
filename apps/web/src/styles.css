@@ -66,6 +66,13 @@ button {
   place-content: center;
   justify-items: center;
   gap: 14px;
+  padding: 32px;
+}
+.connection-error {
+  text-align: center;
+}
+.connection-error .primary-button {
+  justify-self: center;
 }
 .muted,
 .field small,
