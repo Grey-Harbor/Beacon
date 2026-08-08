@@ -167,8 +167,8 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     return () => document.removeEventListener('keydown', handleApplicationKeyDown, true);
   }, []);
 
-  useEffect(() => {
-    if (menuOpen) window.requestAnimationFrame(() => menuItems.current[0]?.focus());
+  useLayoutEffect(() => {
+    if (menuOpen) menuItems.current[0]?.focus({ preventScroll: true });
   }, [menuOpen]);
 
   useEffect(() => {
@@ -198,7 +198,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   function closeApplicationMenu(restoreFocus = false) {
     setApplicationMenuOpen(false);
     if (restoreFocus) {
-      window.requestAnimationFrame(() => (menuReturnFocus.current ?? menuTrigger.current)?.focus());
+      (menuReturnFocus.current ?? menuTrigger.current)?.focus({ preventScroll: true });
     }
   }
 

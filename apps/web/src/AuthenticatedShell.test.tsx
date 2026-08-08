@@ -187,21 +187,14 @@ describe('AuthenticatedShell', () => {
   });
 
   it('handles menu arrows from page content across route changes', async () => {
-    const frames: FrameRequestCallback[] = [];
-    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
-      frames.push(callback);
-      return frames.length;
-    });
     renderShell(<button>Page action</button>);
     const pageAction = screen.getByRole('button', { name: 'Page action' });
     pageAction.focus();
 
     fireEvent.keyDown(pageAction, { key: '/' });
     const addRedirect = await screen.findByRole('menuitem', { name: /Add redirect/ });
-    expect(pageAction).toHaveFocus();
-
-    fireEvent.keyDown(pageAction, { key: 'ArrowDown' });
     expect(addRedirect).toHaveFocus();
+
     fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
     expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
 
@@ -212,8 +205,9 @@ describe('AuthenticatedShell', () => {
     });
     pageAction.focus();
     fireEvent.keyDown(pageAction, { key: '/' });
-    fireEvent.keyDown(pageAction, { key: 'ArrowDown' });
     expect(await screen.findByRole('menuitem', { name: /Add redirect/ })).toHaveFocus();
+    fireEvent.keyDown(document.activeElement as Element, { key: 'ArrowDown' });
+    expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
   });
 
   it('navigates the slash menu from the search field with arrows and Enter', async () => {
