@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   description: 'A calm place to manage redirects.',
   icons: {
     icon: '/beacon-mark.svg',
-    shortcut: '/beacon-mark.svg',
   },
 };
 
