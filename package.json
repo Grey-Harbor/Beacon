@@ -18,7 +18,7 @@
     "docs:check": "node scripts/check-docs.mjs",
     "secrets:generate": "sh scripts/generate-beacon-secrets.sh",
     "start": "npm run start -w @beacon/server",
-    "test": "npm run build -w @beacon/shared && node --test scripts/generate-beacon-secrets.test.mjs && npm run test -w @beacon/server",
+    "test": "npm run build -w @beacon/shared && node --test scripts/generate-beacon-secrets.test.mjs && npm run test -w @beacon/server && npm run test -w @beacon/web",
     "format": "prettier --write . --ignore-unknown",
     "format:check": "prettier --check . --ignore-unknown",
     "ci": "npm run format:check && npm run docs:check && npm run check && npm test && npm run build"

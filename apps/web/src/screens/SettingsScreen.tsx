@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, json } from '../api';
-import { WorkspaceHeader } from '../components';
+import { PageHeader } from '../components';
 import { errorMessage, relativeTime } from '../presentation';
 
 interface RebuildResult {
@@ -31,8 +31,8 @@ export function SettingsPage() {
   }
 
   return (
-    <main className="workspace-page">
-      <WorkspaceHeader label="Settings" title="System health" />
+    <main className="workspace-page narrow-workspace">
+      <PageHeader label="Settings" title="System health" />
       <section className="narrow-editor">
         <div className="settings-row">
           <span className={`health-indicator ${status.status === 'fresh' ? 'fresh' : ''}`} />

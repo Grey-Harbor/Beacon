@@ -1,0 +1,481 @@
+import type { SearchResult } from '@beacon/shared';
+import {
+  Activity,
+  BarChart3,
+  ChevronRight,
+  CirclePlus,
+  Link2,
+  LogOut,
+  Menu,
+  Search,
+  Settings,
+  Target,
+  UserRound,
+  X,
+} from 'lucide-react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
+import { api, json } from './api';
+import { Link, useNavigate, usePath } from './router';
+import type { Session } from './types';
+
+interface AuthenticatedShellProps {
+  session: Session;
+  onLogout(): Promise<void>;
+  children: ReactNode;
+}
+
+type SearchStatus = 'idle' | 'loading' | 'success' | 'error';
+
+export function AuthenticatedShell({ session, onLogout, children }: AuthenticatedShellProps) {
+  const path = usePath();
+  const navigate = useNavigate();
+  const shellNavigation = useRef<HTMLElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const menuTrigger = useRef<HTMLButtonElement>(null);
+  const accountTrigger = useRef<HTMLButtonElement>(null);
+  const menuItems = useRef<Array<HTMLAnchorElement | null>>([]);
+  const accountItem = useRef<HTMLButtonElement>(null);
+  const menuReturnFocus = useRef<HTMLElement | null>(null);
+  const resultsId = useId();
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [activeResult, setActiveResult] = useState(-1);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountError, setAccountError] = useState('');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setResults([]);
+      setSearchStatus('idle');
+      setActiveResult(-1);
+      return () => controller.abort();
+    }
+
+    setSearchStatus('loading');
+    const timer = window.setTimeout(() => {
+      api<SearchResult[]>(`/api/v1/search?q=${encodeURIComponent(query)}`, {
+        signal: controller.signal,
+      })
+        .then((matches) => {
+          setResults(matches);
+          setSearchStatus('success');
+          setActiveResult(-1);
+        })
+        .catch((reason: unknown) => {
+          if (controller.signal.aborted) return;
+          setResults([]);
+          setSearchStatus('error');
+          setActiveResult(-1);
+        });
+    }, 120);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [query]);
+
+  useEffect(() => {
+    setQuery('');
+    setResults([]);
+    setSearchStatus('idle');
+    setSearchOpen(false);
+    setActiveResult(-1);
+    setMenuOpen(false);
+    setAccountOpen(false);
+  }, [path]);
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: PointerEvent) {
+      if (!shellNavigation.current?.contains(event.target as Node)) closeOverlays();
+    }
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    return () => document.removeEventListener('pointerdown', closeOnOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    function openMenuShortcut(event: KeyboardEvent) {
+      if (
+        event.key !== '/' ||
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      if (isTextEntry(target) && target !== searchInput.current) return;
+      event.preventDefault();
+      openApplicationMenu(target ?? menuTrigger.current);
+    }
+    document.addEventListener('keydown', openMenuShortcut);
+    return () => document.removeEventListener('keydown', openMenuShortcut);
+  }, []);
+
+  useEffect(() => {
+    if (menuOpen) window.requestAnimationFrame(() => menuItems.current[0]?.focus());
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (accountOpen) window.requestAnimationFrame(() => accountItem.current?.focus());
+  }, [accountOpen]);
+
+  function closeOverlays() {
+    setSearchOpen(false);
+    setActiveResult(-1);
+    setMenuOpen(false);
+    setAccountOpen(false);
+  }
+
+  function openApplicationMenu(returnFocus: HTMLElement | null) {
+    menuReturnFocus.current = returnFocus;
+    setSearchOpen(false);
+    setActiveResult(-1);
+    setAccountOpen(false);
+    setMenuOpen(true);
+  }
+
+  function closeApplicationMenu(restoreFocus = false) {
+    setMenuOpen(false);
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => (menuReturnFocus.current ?? menuTrigger.current)?.focus());
+    }
+  }
+
+  function openResult(result: SearchResult) {
+    setQuery('');
+    closeOverlays();
+    searchInput.current?.blur();
+    navigate(`/${result.kind}s/${result.id}/edit`);
+  }
+
+  function handleSearchKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      openApplicationMenu(searchInput.current);
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setSearchOpen(false);
+      setActiveResult(-1);
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      if (!results.length) return;
+      event.preventDefault();
+      setSearchOpen(true);
+      setActiveResult((current) => Math.min(current + 1, results.length - 1));
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      if (!results.length) return;
+      event.preventDefault();
+      setSearchOpen(true);
+      setActiveResult((current) => (current < 0 ? results.length - 1 : Math.max(current - 1, 0)));
+      return;
+    }
+    if (event.key === 'Enter' && activeResult >= 0 && results[activeResult]) {
+      event.preventDefault();
+      openResult(results[activeResult]);
+    }
+  }
+
+  function handleMenuKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
+    const current = items.indexOf(document.activeElement as HTMLAnchorElement);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeApplicationMenu(true);
+      return;
+    }
+    if (event.key === 'Tab') {
+      setMenuOpen(false);
+      return;
+    }
+    if ((event.key === 'Enter' || event.key === ' ') && current >= 0) {
+      event.preventDefault();
+      items[current]?.click();
+      return;
+    }
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? items.length - 1
+          : event.key === 'ArrowDown'
+            ? (current + 1 + items.length) % items.length
+            : (current - 1 + items.length) % items.length;
+    items[next]?.focus();
+  }
+
+  function handleAccountKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setAccountOpen(false);
+      window.requestAnimationFrame(() => accountTrigger.current?.focus());
+    } else if (event.key === 'Tab') {
+      setAccountOpen(false);
+    }
+  }
+
+  async function logout() {
+    setAccountError('');
+    try {
+      await api('/api/v1/session', json('DELETE'));
+      setAccountOpen(false);
+      await onLogout();
+    } catch {
+      setAccountError('Unable to sign out. Try again.');
+    }
+  }
+
+  const activeResultId = activeResult >= 0 ? `${resultsId}-${activeResult}` : undefined;
+
+  return (
+    <div className="authenticated-shell">
+      <header className="global-navigation" ref={shellNavigation}>
+        <div className="navigation-primary-row">
+          <Link className="brand-home-link" to="/" aria-label="Beacon home">
+            <span className="brand-mark small" aria-hidden="true">
+              B
+            </span>
+            <span className="brand-name">Beacon</span>
+          </Link>
+          <div className="account-control">
+            <button
+              ref={accountTrigger}
+              className="icon-button account-trigger"
+              aria-label={`Open account menu for ${session.user?.username ?? 'administrator'}`}
+              aria-expanded={accountOpen}
+              aria-haspopup="menu"
+              onClick={() => {
+                setAccountError('');
+                setSearchOpen(false);
+                setMenuOpen(false);
+                setAccountOpen((open) => !open);
+              }}
+            >
+              <UserRound />
+            </button>
+            {accountOpen && (
+              <div className="account-menu" role="menu" onKeyDown={handleAccountKeyDown}>
+                <p className="account-name">{session.user?.username}</p>
+                {accountError && (
+                  <p className="account-error" role="alert">
+                    {accountError}
+                  </p>
+                )}
+                <button ref={accountItem} role="menuitem" onClick={() => void logout()}>
+                  <LogOut /> Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="navigation-search-row">
+          <div className="search-frame">
+            <div className="search-row">
+              <button
+                ref={menuTrigger}
+                className="icon-button menu-trigger"
+                aria-label="Open application menu"
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+                onClick={() => {
+                  if (menuOpen) closeApplicationMenu();
+                  else openApplicationMenu(menuTrigger.current);
+                }}
+              >
+                <Menu />
+              </button>
+              <Search className="search-icon" aria-hidden="true" />
+              <input
+                ref={searchInput}
+                role="combobox"
+                aria-label="Search Beacon"
+                aria-autocomplete="list"
+                aria-controls={resultsId}
+                aria-expanded={searchOpen && Boolean(query.trim())}
+                aria-activedescendant={activeResultId}
+                autoFocus={path === '/'}
+                value={query}
+                onFocus={() => {
+                  setMenuOpen(false);
+                  setAccountOpen(false);
+                  if (query.trim()) setSearchOpen(true);
+                }}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setQuery(value);
+                  setSearchOpen(Boolean(value.trim()));
+                  setActiveResult(-1);
+                  setMenuOpen(false);
+                  setAccountOpen(false);
+                }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Find a redirect or destination…"
+              />
+              {query && (
+                <button
+                  className="icon-button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setQuery('');
+                    setSearchOpen(false);
+                    searchInput.current?.focus();
+                  }}
+                >
+                  <X />
+                </button>
+              )}
+            </div>
+
+            {menuOpen && (
+              <ApplicationMenu
+                itemRefs={menuItems}
+                onClose={() => closeApplicationMenu()}
+                onKeyDown={handleMenuKeyDown}
+              />
+            )}
+            {searchOpen && query.trim() && (
+              <SearchResults
+                id={resultsId}
+                activeResult={activeResult}
+                results={results}
+                status={searchStatus}
+                onActivate={openResult}
+                onHighlight={setActiveResult}
+              />
+            )}
+          </div>
+        </div>
+      </header>
+      {children}
+    </div>
+  );
+}
+
+function SearchResults({
+  id,
+  activeResult,
+  results,
+  status,
+  onActivate,
+  onHighlight,
+}: {
+  id: string;
+  activeResult: number;
+  results: SearchResult[];
+  status: SearchStatus;
+  onActivate(result: SearchResult): void;
+  onHighlight(index: number): void;
+}) {
+  return (
+    <div className="search-results" id={id} role="listbox" aria-label="Search suggestions">
+      {status === 'loading' && <SearchMessage icon={<Search />} text="Searching…" />}
+      {status === 'error' && (
+        <SearchMessage icon={<Search />} text="Search is unavailable. Try again." />
+      )}
+      {status === 'success' && !results.length && (
+        <SearchMessage icon={<Search />} text="No matching assets" />
+      )}
+      {status === 'success' &&
+        results.map((result, index) => (
+          <button
+            key={`${result.kind}:${result.id}`}
+            id={`${id}-${index}`}
+            className={`result-row${activeResult === index ? ' active' : ''}`}
+            role="option"
+            aria-selected={activeResult === index}
+            tabIndex={-1}
+            onMouseDown={(event) => event.preventDefault()}
+            onMouseEnter={() => onHighlight(index)}
+            onClick={() => onActivate(result)}
+          >
+            <span className={`result-icon ${result.kind}`}>
+              {result.kind === 'redirect' ? <Link2 /> : <Target />}
+            </span>
+            <span>
+              <strong>{result.title}</strong>
+              <small>{result.subtitle}</small>
+            </span>
+            <ChevronRight />
+          </button>
+        ))}
+    </div>
+  );
+}
+
+function SearchMessage({ icon, text }: { icon: ReactNode; text: string }) {
+  return (
+    <div className="search-message" role="status">
+      {icon}
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function ApplicationMenu({
+  itemRefs,
+  onClose,
+  onKeyDown,
+}: {
+  itemRefs: { current: Array<HTMLAnchorElement | null> };
+  onClose(): void;
+  onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>): void;
+}) {
+  const links = [
+    { label: 'Add redirect', to: '/redirects/new', icon: <CirclePlus />, shortcut: '⌘ N' },
+    { label: 'Add destination', to: '/destinations/new', icon: <Target /> },
+    { label: 'Reporting', to: '/reports', icon: <BarChart3 />, divider: true },
+    { label: 'Recent activity', to: '/activity', icon: <Activity /> },
+    { label: 'Settings', to: '/settings', icon: <Settings /> },
+  ];
+
+  return (
+    <div className="app-menu" role="menu" onKeyDown={onKeyDown}>
+      <p className="menu-label">Create</p>
+      {links.map((link, index) => (
+        <div key={link.to} role="none">
+          {link.divider && <div className="menu-divider" />}
+          <Link
+            ref={(item) => {
+              itemRefs.current[index] = item;
+            }}
+            role="menuitem"
+            to={link.to}
+            onClick={onClose}
+          >
+            {link.icon} {link.label} <span>{link.shortcut}</span>
+          </Link>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function isTextEntry(target: HTMLElement | null) {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    Boolean(target?.isContentEditable)
+  );
+}

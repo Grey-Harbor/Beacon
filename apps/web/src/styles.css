@@ -59,6 +59,11 @@ h2 {
 button {
   color: inherit;
 }
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(66, 107, 90, 0.28);
+  outline-offset: 2px;
+}
 
 .centered-page {
   min-height: 100vh;
@@ -238,49 +243,118 @@ button {
 }
 
 .home-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 116px);
   background: var(--paper);
 }
-.home-header {
-  height: 78px;
+.global-navigation {
+  position: relative;
+  z-index: 30;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.navigation-primary-row {
+  min-height: 56px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 clamp(22px, 5vw, 74px);
+  padding: 0 clamp(18px, 4vw, 58px);
   border-bottom: 1px solid var(--line);
 }
-.user-chip {
-  font-size: 13px;
-  color: var(--muted);
-  background: var(--soft);
-  padding: 7px 11px;
-  border-radius: 999px;
-}
-.search-workspace {
-  padding: clamp(50px, 9vw, 112px) 24px clamp(48px, 8vw, 90px);
-  background: #e8ede6;
-  border-bottom: 1px solid #d3dad2;
-}
-.search-row {
-  position: relative;
-  width: min(100%, 820px);
-  min-height: 68px;
-  margin: auto;
-  display: flex;
+.brand-home-link {
+  min-height: 44px;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 0 13px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 18px;
+}
+.account-control {
+  position: relative;
+}
+.account-trigger {
+  border: 1px solid var(--line);
+  background: white;
+}
+.account-trigger:hover,
+.account-trigger[aria-expanded='true'] {
+  background: var(--soft);
+}
+.account-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: 220px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 18px 45px rgba(38, 50, 43, 0.16);
+}
+.account-name {
+  margin: 0;
+  padding: 8px 10px 10px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+.account-error {
+  margin: 0 10px 8px;
+  color: var(--danger);
+  font-size: 12px;
+}
+.account-menu button {
+  min-height: 42px;
+  width: 100%;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.account-menu button:hover,
+.account-menu button:focus-visible {
+  background: var(--soft);
+  outline: 0;
+}
+.account-menu svg {
+  width: 17px;
+}
+.navigation-search-row {
+  padding: 8px 20px 11px;
+}
+.search-frame {
+  position: relative;
+  width: min(100%, 820px);
+  margin: auto;
+}
+.search-row {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
   background: white;
   border: 1px solid rgba(38, 50, 43, 0.14);
-  border-radius: 16px;
-  box-shadow: 0 22px 60px rgba(58, 77, 65, 0.13);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(58, 77, 65, 0.08);
+}
+.search-row:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(66, 107, 90, 0.12);
 }
 .search-row input {
   flex: 1;
   border: 0;
   outline: 0;
   min-width: 0;
-  font-size: 18px;
+  font-size: 15px;
   background: transparent;
 }
 .search-icon {
@@ -288,8 +362,8 @@ button {
   color: #758078;
 }
 .icon-button {
-  width: 43px;
-  height: 43px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border: 0;
@@ -311,8 +385,11 @@ button {
   background: var(--accent-dark);
 }
 .search-results {
-  width: min(100%, 820px);
-  margin: 10px auto 0;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 35;
   padding: 8px;
   background: white;
   border: 1px solid var(--line);
@@ -333,6 +410,7 @@ button {
   cursor: pointer;
 }
 .result-row:hover,
+.result-row.active,
 .result-row:focus-visible {
   background: #f0f3ee;
   outline: 0;
@@ -374,26 +452,23 @@ button {
   width: 17px;
   color: #9aa29b;
 }
-.search-hint {
+.search-message {
+  min-height: 70px;
   display: flex;
-  gap: 9px;
+  align-items: center;
   justify-content: center;
-  margin-top: 18px;
-  color: #717c74;
-  font-size: 13px;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
 }
-kbd {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid #ccd3cc;
-  border-radius: 5px;
-  padding: 0 6px;
-  box-shadow: 0 1px 0 white;
+.search-message svg {
+  width: 19px;
 }
 .app-menu {
   position: absolute;
-  left: 7px;
-  top: 76px;
-  z-index: 20;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 35;
   width: 264px;
   padding: 8px;
   border: 1px solid var(--line);
@@ -418,8 +493,10 @@ kbd {
   font-size: 14px;
 }
 .app-menu a:hover,
+.app-menu a:focus-visible,
 .app-menu button:hover {
   background: var(--soft);
+  outline: 0;
 }
 .app-menu svg {
   width: 17px;
@@ -444,7 +521,7 @@ kbd {
 .home-content {
   width: min(100% - 40px, 960px);
   margin: auto;
-  padding: 54px 0 90px;
+  padding: 46px 0 90px;
 }
 .section-heading {
   display: flex;
@@ -516,33 +593,33 @@ kbd {
 }
 
 .workspace-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 116px);
   background: #f7f8f5;
 }
-.workspace-header {
-  min-height: 136px;
-  padding: 28px clamp(22px, 6vw, 86px);
-  display: grid;
-  grid-template-columns: 1fr minmax(0, 720px) 1fr;
+.editor-workspace {
+  --page-width: 1080px;
+}
+.report-workspace {
+  --page-width: 860px;
+}
+.narrow-workspace {
+  --page-width: 680px;
+}
+.page-header {
+  width: min(100% - 44px, var(--page-width, 1080px));
+  min-height: 92px;
+  margin: 0 auto;
+  padding: 28px 0 18px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--line);
-  background: var(--paper);
 }
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--muted);
-  font-size: 14px;
-}
-.back-link svg {
-  width: 17px;
-}
-.workspace-title h1 {
+.page-title h1 {
   font-size: 28px;
   margin-bottom: 0;
 }
-.workspace-title .eyebrow {
+.page-title .eyebrow {
   margin-bottom: 5px;
 }
 .header-actions {
@@ -554,7 +631,7 @@ kbd {
   display: grid;
   grid-template-columns: minmax(0, 700px) 280px;
   gap: 54px;
-  padding: 54px 0 100px;
+  padding: 34px 0 100px;
 }
 .editor-main {
   display: grid;
@@ -694,7 +771,7 @@ kbd {
 .report-page {
   width: min(100% - 44px, 860px);
   margin: 0 auto;
-  padding: 54px 0 100px;
+  padding: 34px 0 100px;
   display: grid;
   gap: 25px;
 }
@@ -841,13 +918,9 @@ tbody tr:last-child td {
     border-left: 0;
     border-top: 1px solid var(--line);
   }
-  .workspace-header {
-    grid-template-columns: 1fr auto;
-    gap: 20px;
-  }
-  .workspace-title {
-    grid-row: 2;
-    grid-column: 1 / -1;
+  .page-header {
+    min-height: 84px;
+    gap: 18px;
   }
   .editor-layout {
     grid-template-columns: 1fr;
@@ -870,8 +943,30 @@ tbody tr:last-child td {
   .activity-row time {
     display: none;
   }
-  .home-header {
-    padding: 0 20px;
+  .navigation-primary-row {
+    padding: 0 16px;
+  }
+  .navigation-search-row {
+    padding: 7px 12px 10px;
+  }
+  .search-row {
+    gap: 4px;
+  }
+  .search-row input {
+    font-size: 14px;
+  }
+  .app-menu {
+    width: min(264px, calc(100vw - 24px));
+  }
+}
+
+@media (max-width: 430px) {
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .header-actions {
+    align-self: flex-end;
   }
 }
 

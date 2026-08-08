@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AuthenticatedShell } from './AuthenticatedShell';
 import { api } from './api';
 import { Loading } from './components';
 import { ActivityPage } from './screens/ActivityScreen';
@@ -35,14 +36,24 @@ export function App() {
   if (!configured) return <SetupPage onComplete={refreshSession} />;
   if (!session.authenticated) return <LoginPage onComplete={refreshSession} />;
 
+  let page;
   if (path === '/redirects/new' || /^\/redirects\/[^/]+\/edit$/.test(path)) {
-    return <RedirectEditorPage />;
+    page = <RedirectEditorPage />;
+  } else if (path === '/destinations/new' || /^\/destinations\/[^/]+\/edit$/.test(path)) {
+    page = <DestinationEditorPage />;
+  } else if (path === '/activity') {
+    page = <ActivityPage />;
+  } else if (path === '/reports') {
+    page = <ReportsPage />;
+  } else if (path === '/settings') {
+    page = <SettingsPage />;
+  } else {
+    page = <HomePage />;
   }
-  if (path === '/destinations/new' || /^\/destinations\/[^/]+\/edit$/.test(path)) {
-    return <DestinationEditorPage />;
-  }
-  if (path === '/activity') return <ActivityPage />;
-  if (path === '/reports') return <ReportsPage />;
-  if (path === '/settings') return <SettingsPage />;
-  return <HomePage session={session} onLogout={refreshSession} />;
+
+  return (
+    <AuthenticatedShell session={session} onLogout={refreshSession}>
+      {page}
+    </AuthenticatedShell>
+  );
 }
