@@ -1,9 +1,30 @@
 import type { InputHTMLAttributes, ReactNode } from 'react';
 
+export function BrandMark({ small = false }: { small?: boolean }) {
+  return (
+    <span className={`brand-mark${small ? ' small' : ''}`} aria-hidden="true">
+      <img src="/beacon-mark.svg" alt="" />
+    </span>
+  );
+}
+
+const projectSites = {
+  Drift: 'https://drift.greyharborsoftware.com',
+  Compactor: 'https://compactor.greyharborsoftware.com',
+} as const;
+
+export function ProjectLink({ name }: { name: keyof typeof projectSites }) {
+  return (
+    <a className="project-link" href={projectSites[name]}>
+      {name}
+    </a>
+  );
+}
+
 export function Loading() {
   return (
     <main className="centered-page" aria-live="polite">
-      <div className="brand-mark">B</div>
+      <BrandMark />
       <p className="muted">Preparing your workspace…</p>
     </main>
   );
@@ -22,15 +43,13 @@ export function AuthShell({
     <main className="auth-page">
       <section className="auth-intro">
         <div className="brand-lockup">
-          <span className="brand-mark">B</span>
+          <BrandMark />
           <span>Beacon</span>
         </div>
         <div>
           <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>
-          <p className="lede">
-            A calm place to manage the redirect infrastructure Compactor serves.
-          </p>
+          <p className="lede">A calm place to manage redirects.</p>
         </div>
       </section>
       <section className="auth-panel">{children}</section>

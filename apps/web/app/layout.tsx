@@ -3,7 +3,11 @@ import '../src/styles.css';
 
 export const metadata: Metadata = {
   title: 'Beacon',
-  description: 'A calm place to manage redirect infrastructure.',
+  description: 'A calm place to manage redirects.',
+  icons: {
+    icon: '/beacon-mark.svg',
+    shortcut: '/beacon-mark.svg',
+  },
 };
 
 export const viewport: Viewport = {

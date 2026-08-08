@@ -2,7 +2,7 @@ import type { EventRecord, ReportRow } from '@beacon/shared';
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { PageHeader } from '../components';
+import { PageHeader, ProjectLink } from '../components';
 import { relativeTime } from '../presentation';
 
 export function ReportsPage() {
@@ -27,7 +27,8 @@ export function ReportsPage() {
           <div>
             <h2>Observed requests</h2>
             <p>
-              Compactor event delivery is best-effort; use this report for operations, not billing.
+              <ProjectLink name="Compactor" /> event delivery is best-effort; use this report for
+              operations, not billing.
             </p>
           </div>
           <ReportFilters
@@ -41,7 +42,9 @@ export function ReportsPage() {
         <div className="section-heading secondary">
           <div>
             <h2>Event history</h2>
-            <p>The latest sanitized observations received from Compactor.</p>
+            <p>
+              The latest sanitized observations received from <ProjectLink name="Compactor" />.
+            </p>
           </div>
         </div>
         <EventHistory events={events} />
