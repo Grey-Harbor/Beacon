@@ -21,3 +21,21 @@ jobs:
       - run: npm run ci
       - run: npm audit --omit=dev --audit-level=high
       - run: docker build -t beacon:test .
+
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: site
+      - run: npm run check
+        working-directory: site
+      - run: npm run build
+        working-directory: site

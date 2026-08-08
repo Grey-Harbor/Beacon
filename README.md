@@ -1,3 +1,5 @@
+![Beacon](https://beacon.greyharborsoftware.com/brand/social-card.png)
+
 # Beacon
 
 Use Beacon to manage self-hosted redirect infrastructure backed by Drift and executed by Compactor. Start with the [getting-started tutorial](./docs/tutorial/getting-started.md) for local development or the [self-hosting guide](./docs/how-to/self-hosting.md) for the bundled Compose deployment.

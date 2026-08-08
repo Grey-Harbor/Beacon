@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1731" height="909" viewBox="0 0 1731 909" fill="none">
+  <title>Beacon — Search-first redirect management</title>
+  <defs>
+    <linearGradient id="background" x1="116" y1="32" x2="1588" y2="907" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#091b26" />
+      <stop offset="1" stop-color="#051017" />
+    </linearGradient>
+    <linearGradient id="beam" x1="956" y1="631" x2="1534" y2="251" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d5a86c" />
+      <stop offset=".24" stop-color="#edf4f8" />
+      <stop offset="1" stop-color="#8bbbd4" />
+    </linearGradient>
+    <filter id="glow" x="784" y="75" width="892" height="746" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="34" />
+    </filter>
+  </defs>
+  <rect width="1731" height="909" fill="url(#background)" />
+  <path d="M0 112h1731M0 240h1731M0 368h1731M0 496h1731M0 624h1731M0 752h1731" stroke="#9dc6da" stroke-opacity=".07" />
+  <path d="M135 0v909M263 0v909M391 0v909M519 0v909M647 0v909M775 0v909M903 0v909M1031 0v909M1159 0v909M1287 0v909M1415 0v909M1543 0v909M1671 0v909" stroke="#9dc6da" stroke-opacity=".05" />
+  <circle cx="1301" cy="441" r="238" fill="#8bbbd4" fill-opacity=".1" filter="url(#glow)" />
+  <g transform="translate(910 136)">
+    <path d="M54 494c105-208 261-326 504-336" stroke="url(#beam)" stroke-width="40" stroke-linecap="round" />
+    <path d="M70 600c188-119 387-177 633-164" stroke="#8bbbd4" stroke-opacity=".68" stroke-width="23" stroke-linecap="round" />
+    <circle cx="43" cy="512" r="56" fill="#d5a86c" />
+    <circle cx="43" cy="512" r="22" fill="#edf4f8" />
+    <circle cx="566" cy="158" r="66" fill="#0b202d" stroke="#8bbbd4" stroke-width="31" />
+  </g>
+  <text x="138" y="308" fill="#8bbbd4" font-family="Arial, sans-serif" font-size="29" font-weight="700" letter-spacing="10">GREY HARBOR SOFTWARE</text>
+  <text x="132" y="479" fill="#edf4f8" font-family="Georgia, serif" font-size="154" font-weight="700">Beacon</text>
+  <text x="138" y="569" fill="#a9bec9" font-family="Arial, sans-serif" font-size="43">Search-first redirect management</text>
+  <text x="138" y="631" fill="#a9bec9" font-family="Arial, sans-serif" font-size="43">for self-hosted infrastructure.</text>
+</svg>
