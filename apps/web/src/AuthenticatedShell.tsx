@@ -169,6 +169,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
       openApplicationMenu(searchInput.current);
       return;
     }
+    if (menuOpen) return;
     if (event.key === 'Escape') {
       event.preventDefault();
       setSearchOpen(false);
@@ -195,7 +196,8 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     }
   }
 
-  function handleMenuKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+  function handleMenuKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
+    if (!menuOpen) return;
     const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
     const current = items.indexOf(document.activeElement as HTMLAnchorElement);
     if (event.key === 'Escape') {
@@ -214,14 +216,19 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     }
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
+    if (!items.length) return;
     const next =
       event.key === 'Home'
         ? 0
         : event.key === 'End'
           ? items.length - 1
           : event.key === 'ArrowDown'
-            ? (current + 1 + items.length) % items.length
-            : (current - 1 + items.length) % items.length;
+            ? current < 0
+              ? 0
+              : (current + 1) % items.length
+            : current < 0
+              ? items.length - 1
+              : (current - 1 + items.length) % items.length;
     items[next]?.focus();
   }
 
@@ -289,7 +296,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
         </div>
 
         <div className="navigation-search-row">
-          <div className="search-frame">
+          <div className="search-frame" onKeyDown={handleMenuKeyDown}>
             <div className="search-row">
               <button
                 ref={menuTrigger}
@@ -347,11 +354,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
             </div>
 
             {menuOpen && (
-              <ApplicationMenu
-                itemRefs={menuItems}
-                onClose={() => closeApplicationMenu()}
-                onKeyDown={handleMenuKeyDown}
-              />
+              <ApplicationMenu itemRefs={menuItems} onClose={() => closeApplicationMenu()} />
             )}
             {searchOpen && query.trim() && (
               <SearchResults
@@ -434,11 +437,9 @@ function SearchMessage({ icon, text }: { icon: ReactNode; text: string }) {
 function ApplicationMenu({
   itemRefs,
   onClose,
-  onKeyDown,
 }: {
   itemRefs: { current: Array<HTMLAnchorElement | null> };
   onClose(): void;
-  onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>): void;
 }) {
   const links = [
     { label: 'Add redirect', to: '/redirects/new', icon: <CirclePlus />, shortcut: '⌘ N' },
@@ -449,7 +450,7 @@ function ApplicationMenu({
   ];
 
   return (
-    <div className="app-menu" role="menu" onKeyDown={onKeyDown}>
+    <div className="app-menu" role="menu">
       <p className="menu-label">Create</p>
       {links.map((link, index) => (
         <div key={link.to} role="none">
