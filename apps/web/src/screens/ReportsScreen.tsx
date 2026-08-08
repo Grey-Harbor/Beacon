@@ -2,7 +2,7 @@ import type { EventRecord, ReportRow } from '@beacon/shared';
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { WorkspaceHeader } from '../components';
+import { PageHeader } from '../components';
 import { relativeTime } from '../presentation';
 
 export function ReportsPage() {
@@ -20,8 +20,8 @@ export function ReportsPage() {
   }, [period, outcome]);
 
   return (
-    <main className="workspace-page">
-      <WorkspaceHeader label="Reporting" title="Redirect activity" />
+    <main className="workspace-page report-workspace">
+      <PageHeader label="Reporting" title="Redirect activity" />
       <section className="report-page">
         <div className="section-heading">
           <div>

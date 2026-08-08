@@ -2,7 +2,7 @@ import type { ActivityRecord } from '@beacon/shared';
 import { Activity, ChevronRight, Link2, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { ErrorMessage, WorkspaceHeader } from '../components';
+import { ErrorMessage, PageHeader } from '../components';
 import { capitalize, errorMessage, relativeTime } from '../presentation';
 import { Link } from '../router';
 
@@ -19,8 +19,8 @@ export function ActivityPage() {
   }, []);
 
   return (
-    <main className="workspace-page">
-      <WorkspaceHeader label="Audit log" title="Recent activity" />
+    <main className="workspace-page report-workspace">
+      <PageHeader label="Audit log" title="Recent activity" />
       <section className="report-page">
         <div className="section-heading">
           <div>

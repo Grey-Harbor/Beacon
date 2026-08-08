@@ -2,7 +2,7 @@ import type { DestinationResource } from '@beacon/shared';
 import { Archive, Link2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, json } from '../api';
-import { ErrorMessage, Field, Loading, WorkspaceHeader } from '../components';
+import { ErrorMessage, Field, Loading, PageHeader } from '../components';
 import { conflictMessage, errorMessage } from '../presentation';
 import { Link, useNavigate, usePath } from '../router';
 
@@ -52,8 +52,8 @@ export function DestinationEditorPage() {
   if (id && !destination && !error) return <Loading />;
 
   return (
-    <main className="workspace-page">
-      <WorkspaceHeader
+    <main className="workspace-page narrow-workspace">
+      <PageHeader
         label={id ? 'Destination workspace' : 'New asset'}
         title={destination?.title ?? 'Add destination'}
         actions={

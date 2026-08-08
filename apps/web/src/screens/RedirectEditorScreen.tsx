@@ -3,7 +3,7 @@ import { Archive, ChevronRight, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { api, json } from '../api';
-import { ErrorMessage, Field, Loading, WorkspaceHeader } from '../components';
+import { ErrorMessage, Field, Loading, PageHeader } from '../components';
 import {
   conflictMessage,
   deriveSlug,
@@ -78,8 +78,8 @@ export function RedirectEditorPage() {
   if (id && !redirect && !error) return <Loading />;
 
   return (
-    <main className="workspace-page">
-      <WorkspaceHeader
+    <main className="workspace-page editor-workspace">
+      <PageHeader
         label={id ? 'Redirect workspace' : 'New asset'}
         title={redirect?.title ?? 'Add redirect'}
         actions={

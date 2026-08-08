@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore, type AnchorHTMLAttributes } from 'react';
+import { forwardRef, useCallback, useSyncExternalStore, type AnchorHTMLAttributes } from 'react';
 
 function subscribe(listener: () => void) {
   window.addEventListener('popstate', listener);
@@ -26,15 +26,17 @@ export function useNavigate() {
   }, []);
 }
 
-export function Link({
-  to,
-  onClick,
-  ...props
-}: Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { to: string }) {
+type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { to: string };
+
+export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
+  { to, onClick, ...props },
+  ref,
+) {
   const navigate = useNavigate();
   return (
     <a
       {...props}
+      ref={ref}
       href={to}
       onClick={(event) => {
         onClick?.(event);
@@ -52,4 +54,4 @@ export function Link({
       }}
     />
   );
-}
+});

@@ -1,6 +1,4 @@
-import { ArrowLeft } from 'lucide-react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
-import { Link } from './router';
 
 export function Loading() {
   return (
@@ -40,7 +38,7 @@ export function AuthShell({
   );
 }
 
-export function WorkspaceHeader({
+export function PageHeader({
   label,
   title,
   actions,
@@ -50,11 +48,8 @@ export function WorkspaceHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="workspace-header">
-      <Link className="back-link" to="/">
-        <ArrowLeft /> Home
-      </Link>
-      <div className="workspace-title">
+    <header className="page-header">
+      <div className="page-title">
         <p className="eyebrow">{label}</p>
         <h1>{title}</h1>
       </div>
