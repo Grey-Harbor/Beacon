@@ -157,6 +157,8 @@ describe('AuthenticatedShell', () => {
 
     fireEvent.keyDown(document, { key: '/' });
     const firstItem = await screen.findByRole('menuitem', { name: /Add redirect/ });
+    expect(firstItem).toHaveProperty('tagName', 'BUTTON');
+    expect(firstItem).toHaveAttribute('tabindex', '-1');
     expect(firstItem).toHaveFocus();
     fireEvent.keyDown(firstItem, { key: 'ArrowDown' });
     expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();

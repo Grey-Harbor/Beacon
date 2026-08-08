@@ -42,7 +42,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   const searchInput = useRef<HTMLInputElement>(null);
   const menuTrigger = useRef<HTMLButtonElement>(null);
   const accountTrigger = useRef<HTMLButtonElement>(null);
-  const menuItems = useRef<Array<HTMLAnchorElement | null>>([]);
+  const menuItems = useRef<Array<HTMLButtonElement | null>>([]);
   const menuOpenRef = useRef(false);
   const accountItem = useRef<HTMLButtonElement>(null);
   const menuReturnFocus = useRef<HTMLElement | null>(null);
@@ -125,8 +125,8 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
         return;
       }
       if (!menuOpenRef.current) return;
-      const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
-      const current = items.indexOf(document.activeElement as HTMLAnchorElement);
+      const items = menuItems.current.filter((item): item is HTMLButtonElement => Boolean(item));
+      const current = items.indexOf(document.activeElement as HTMLButtonElement);
       if (event.key === 'Tab') {
         setApplicationMenuOpen(false);
         return;
@@ -442,9 +442,10 @@ function ApplicationMenu({
   itemRefs,
   onClose,
 }: {
-  itemRefs: { current: Array<HTMLAnchorElement | null> };
+  itemRefs: { current: Array<HTMLButtonElement | null> };
   onClose(): void;
 }) {
+  const navigate = useNavigate();
   const links = [
     { label: 'Add redirect', to: '/redirects/new', icon: <CirclePlus />, shortcut: '⌘ N' },
     { label: 'Add destination', to: '/destinations/new', icon: <Target /> },
@@ -459,16 +460,20 @@ function ApplicationMenu({
       {links.map((link, index) => (
         <div key={link.to} role="none">
           {link.divider && <div className="menu-divider" />}
-          <Link
+          <button
             ref={(item) => {
               itemRefs.current[index] = item;
             }}
+            type="button"
             role="menuitem"
-            to={link.to}
-            onClick={onClose}
+            tabIndex={-1}
+            onClick={() => {
+              onClose();
+              navigate(link.to);
+            }}
           >
             {link.icon} {link.label} <span>{link.shortcut}</span>
-          </Link>
+          </button>
         </div>
       ))}
     </div>

@@ -496,7 +496,8 @@ a:focus-visible {
 }
 .app-menu a:hover,
 .app-menu a:focus-visible,
-.app-menu button:hover {
+.app-menu button:hover,
+.app-menu button:focus-visible {
   background: var(--soft);
   outline: 0;
 }
