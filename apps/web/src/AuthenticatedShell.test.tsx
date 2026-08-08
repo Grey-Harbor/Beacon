@@ -151,6 +151,19 @@ describe('AuthenticatedShell', () => {
     );
   });
 
+  it('keeps the shell available when search returns an invalid payload', async () => {
+    vi.mocked(fetch).mockImplementation(() => jsonResponse(null));
+    renderShell();
+    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
+
+    fireEvent.change(search, { target: { value: 'docs' } });
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent('Search is unavailable'),
+    );
+    expect(screen.getByText('Workspace content')).toBeInTheDocument();
+  });
+
   it('opens the slash menu, roves focus, restores focus, and ignores editor fields', async () => {
     renderShell(<input aria-label="Editor field" />);
     const trigger = screen.getByRole('button', { name: 'Open application menu' });

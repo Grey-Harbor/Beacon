@@ -68,10 +68,11 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
 
     setSearchStatus('loading');
     const timer = window.setTimeout(() => {
-      api<SearchResult[]>(`/api/v1/search?q=${encodeURIComponent(query)}`, {
+      api<unknown>(`/api/v1/search?q=${encodeURIComponent(query)}`, {
         signal: controller.signal,
       })
-        .then((matches) => {
+        .then((body) => {
+          const matches = parseSearchResults(body);
           setResults(matches);
           setSearchStatus('success');
           setActiveResult(-1);
@@ -486,5 +487,23 @@ function isTextEntry(target: HTMLElement | null) {
     target instanceof HTMLTextAreaElement ||
     target instanceof HTMLSelectElement ||
     Boolean(target?.isContentEditable)
+  );
+}
+
+function parseSearchResults(value: unknown): SearchResult[] {
+  if (!Array.isArray(value) || !value.every(isSearchResult)) {
+    throw new Error('Search response was invalid');
+  }
+  return value;
+}
+
+function isSearchResult(value: unknown): value is SearchResult {
+  if (!value || typeof value !== 'object') return false;
+  const result = value as Record<string, unknown>;
+  return (
+    typeof result.id === 'string' &&
+    (result.kind === 'redirect' || result.kind === 'destination') &&
+    typeof result.title === 'string' &&
+    typeof result.subtitle === 'string'
   );
 }
