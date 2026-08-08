@@ -16,6 +16,7 @@ import {
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -42,6 +43,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   const menuTrigger = useRef<HTMLButtonElement>(null);
   const accountTrigger = useRef<HTMLButtonElement>(null);
   const menuItems = useRef<Array<HTMLAnchorElement | null>>([]);
+  const menuOpenRef = useRef(false);
   const accountItem = useRef<HTMLButtonElement>(null);
   const menuReturnFocus = useRef<HTMLElement | null>(null);
   const resultsId = useId();
@@ -88,13 +90,13 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     };
   }, [query]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setQuery('');
     setResults([]);
     setSearchStatus('idle');
     setSearchOpen(false);
     setActiveResult(-1);
-    setMenuOpen(false);
+    setApplicationMenuOpen(false);
     setAccountOpen(false);
   }, [path]);
 
@@ -107,37 +109,26 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }, []);
 
   useEffect(() => {
-    function openMenuShortcut(event: KeyboardEvent) {
+    function handleApplicationKeyDown(event: KeyboardEvent) {
       if (
-        event.key !== '/' ||
-        event.defaultPrevented ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey
+        event.key === '/' &&
+        !event.defaultPrevented &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
       ) {
+        const target = event.target instanceof HTMLElement ? event.target : null;
+        if (isTextEntry(target) && target !== searchInput.current) return;
+        event.preventDefault();
+        event.stopPropagation();
+        openApplicationMenu(target ?? menuTrigger.current);
         return;
       }
-      const target = event.target instanceof HTMLElement ? event.target : null;
-      if (isTextEntry(target) && target !== searchInput.current) return;
-      event.preventDefault();
-      openApplicationMenu(target ?? menuTrigger.current);
-    }
-    document.addEventListener('keydown', openMenuShortcut);
-    return () => document.removeEventListener('keydown', openMenuShortcut);
-  }, []);
-
-  useEffect(() => {
-    if (menuOpen) window.requestAnimationFrame(() => menuItems.current[0]?.focus());
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    function handleApplicationMenuKeyDown(event: KeyboardEvent) {
+      if (!menuOpenRef.current) return;
       const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
       const current = items.indexOf(document.activeElement as HTMLAnchorElement);
       if (event.key === 'Tab') {
-        setMenuOpen(false);
+        setApplicationMenuOpen(false);
         return;
       }
       if (event.key === 'Escape') {
@@ -171,8 +162,12 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
       items[next]?.focus();
     }
 
-    document.addEventListener('keydown', handleApplicationMenuKeyDown, true);
-    return () => document.removeEventListener('keydown', handleApplicationMenuKeyDown, true);
+    document.addEventListener('keydown', handleApplicationKeyDown, true);
+    return () => document.removeEventListener('keydown', handleApplicationKeyDown, true);
+  }, []);
+
+  useEffect(() => {
+    if (menuOpen) window.requestAnimationFrame(() => menuItems.current[0]?.focus());
   }, [menuOpen]);
 
   useEffect(() => {
@@ -182,8 +177,13 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   function closeOverlays() {
     setSearchOpen(false);
     setActiveResult(-1);
-    setMenuOpen(false);
+    setApplicationMenuOpen(false);
     setAccountOpen(false);
+  }
+
+  function setApplicationMenuOpen(open: boolean) {
+    menuOpenRef.current = open;
+    setMenuOpen(open);
   }
 
   function openApplicationMenu(returnFocus: HTMLElement | null) {
@@ -191,11 +191,11 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     setSearchOpen(false);
     setActiveResult(-1);
     setAccountOpen(false);
-    setMenuOpen(true);
+    setApplicationMenuOpen(true);
   }
 
   function closeApplicationMenu(restoreFocus = false) {
-    setMenuOpen(false);
+    setApplicationMenuOpen(false);
     if (restoreFocus) {
       window.requestAnimationFrame(() => (menuReturnFocus.current ?? menuTrigger.current)?.focus());
     }
@@ -209,11 +209,6 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }
 
   function handleSearchKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
-    if (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-      event.preventDefault();
-      openApplicationMenu(searchInput.current);
-      return;
-    }
     if (menuOpen) return;
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -282,7 +277,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
               onClick={() => {
                 setAccountError('');
                 setSearchOpen(false);
-                setMenuOpen(false);
+                setApplicationMenuOpen(false);
                 setAccountOpen((open) => !open);
               }}
             >
@@ -332,7 +327,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
                 autoFocus={path === '/'}
                 value={query}
                 onFocus={() => {
-                  setMenuOpen(false);
+                  setApplicationMenuOpen(false);
                   setAccountOpen(false);
                   if (query.trim()) setSearchOpen(true);
                 }}
@@ -341,7 +336,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
                   setQuery(value);
                   setSearchOpen(Boolean(value.trim()));
                   setActiveResult(-1);
-                  setMenuOpen(false);
+                  setApplicationMenuOpen(false);
                   setAccountOpen(false);
                 }}
                 onKeyDown={handleSearchKeyDown}

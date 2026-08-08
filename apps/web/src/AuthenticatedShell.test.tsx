@@ -171,7 +171,7 @@ describe('AuthenticatedShell', () => {
     expect(editor).toHaveValue('');
   });
 
-  it('handles menu arrows from page content before focus moves on the next frame', async () => {
+  it('handles menu arrows from page content across route changes', async () => {
     const frames: FrameRequestCallback[] = [];
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       frames.push(callback);
@@ -189,6 +189,16 @@ describe('AuthenticatedShell', () => {
     expect(addRedirect).toHaveFocus();
     fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
     expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
+
+    fireEvent.keyDown(document.activeElement as Element, { key: 'Escape' });
+    act(() => {
+      window.history.pushState(null, '', '/settings');
+      window.dispatchEvent(new Event('beacon:navigate'));
+    });
+    pageAction.focus();
+    fireEvent.keyDown(pageAction, { key: '/' });
+    fireEvent.keyDown(pageAction, { key: 'ArrowDown' });
+    expect(await screen.findByRole('menuitem', { name: /Add redirect/ })).toHaveFocus();
   });
 
   it('navigates the slash menu from the search field with arrows and Enter', async () => {
