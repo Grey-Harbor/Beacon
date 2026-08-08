@@ -8,6 +8,19 @@ export function BrandMark({ small = false }: { small?: boolean }) {
   );
 }
 
+const projectSites = {
+  Drift: 'https://drift.greyharborsoftware.com',
+  Compactor: 'https://compactor.greyharborsoftware.com',
+} as const;
+
+export function ProjectLink({ name }: { name: keyof typeof projectSites }) {
+  return (
+    <a className="project-link" href={projectSites[name]}>
+      {name}
+    </a>
+  );
+}
+
 export function Loading() {
   return (
     <main className="centered-page" aria-live="polite">

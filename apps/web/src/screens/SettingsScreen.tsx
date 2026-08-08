@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, json } from '../api';
-import { PageHeader } from '../components';
+import { PageHeader, ProjectLink } from '../components';
 import { errorMessage, relativeTime } from '../presentation';
 
 interface RebuildResult {
@@ -20,7 +20,7 @@ export function SettingsPage() {
   useEffect(() => void refresh(), []);
 
   async function rebuild() {
-    setNotice('Rebuilding from Drift…');
+    setNotice('Rebuilding authoritative data…');
     try {
       const result = await api<RebuildResult>('/api/v1/projections/rebuild', json('POST'));
       setNotice(rebuildSummary(result));
@@ -53,7 +53,10 @@ export function SettingsPage() {
           <span className="health-indicator fresh" />
           <div>
             <h3>Runtime contract</h3>
-            <p>Compactor changes propagate within 30 seconds under normal operation.</p>
+            <p>
+              <ProjectLink name="Compactor" /> changes propagate within 30 seconds under normal
+              operation.
+            </p>
             <small>Source and event credentials are configured outside the application.</small>
           </div>
         </div>

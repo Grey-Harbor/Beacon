@@ -3,7 +3,7 @@ import { Archive, ChevronRight, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { api, json } from '../api';
-import { ErrorMessage, Field, Loading, PageHeader } from '../components';
+import { ErrorMessage, Field, Loading, PageHeader, ProjectLink } from '../components';
 import {
   conflictMessage,
   deriveSlug,
@@ -267,8 +267,8 @@ function RedirectSidebar({
       <div className="aside-block">
         <p className="eyebrow">Publishing</p>
         <p className="calm-note">
-          Changes reach Compactor within the configured 30-second cache window. Cached redirects may
-          remain available during a source outage.
+          Changes reach <ProjectLink name="Compactor" /> within the configured 30-second cache
+          window. Cached redirects may remain available during a source outage.
         </p>
       </div>
       {redirect && (

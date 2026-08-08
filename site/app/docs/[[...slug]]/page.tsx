@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DocsBody, DocsDescription, DocsTitle } from 'fumadocs-ui/page';
 
+import { linkProjectNames } from '@/components/project-link';
 import { SiteFooter } from '@/components/site-footer';
 import { getDocDescription, getDocPage, getDocParams, routeFromSlug } from '@/lib/docs';
 import { titleForDoc } from '@/lib/format';
@@ -82,8 +83,10 @@ export default async function DocsPageRoute({ params }: DocsPageProps) {
           ) : null}
           <div className="docs-root">
             <article className="docs-article">
-              <DocsTitle>{title}</DocsTitle>
-              {description ? <DocsDescription>{description}</DocsDescription> : null}
+              <DocsTitle>{linkProjectNames(title)}</DocsTitle>
+              {description ? (
+                <DocsDescription>{linkProjectNames(description)}</DocsDescription>
+              ) : null}
               <DocsBody>{page.body}</DocsBody>
             </article>
             {page.toc.length > 0 ? (

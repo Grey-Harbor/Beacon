@@ -3,6 +3,7 @@ import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { AuthenticatedShell } from './AuthenticatedShell';
+import { ProjectLink } from './components';
 
 const session = { authenticated: true, user: { username: 'harbor-admin' } };
 
@@ -51,6 +52,24 @@ describe('AuthenticatedShell', () => {
     expect(home).not.toHaveTextContent('Compactor');
     expect(home.querySelector('img')).toHaveAttribute('src', '/beacon-mark.svg');
     expect(screen.getByText('Workspace content')).toBeInTheDocument();
+  });
+
+  it('links related project names to their websites', () => {
+    render(
+      <>
+        <ProjectLink name="Drift" />
+        <ProjectLink name="Compactor" />
+      </>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Drift' })).toHaveAttribute(
+      'href',
+      'https://drift.greyharborsoftware.com',
+    );
+    expect(screen.getByRole('link', { name: 'Compactor' })).toHaveAttribute(
+      'href',
+      'https://compactor.greyharborsoftware.com',
+    );
   });
 
   it('supports keyboard search selection and clears state after navigation', async () => {

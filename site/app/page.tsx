@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { ProjectLink } from '@/components/project-link';
 import { SiteFooter } from '@/components/site-footer';
 import { buildPageMetadata, siteDescription, siteName, siteUrl, socialCard } from '@/lib/seo';
 
@@ -12,26 +13,49 @@ export const metadata: Metadata = buildPageMetadata({
 
 const principles = [
   {
+    key: 'search',
     title: 'Search first',
     description:
       'Find redirects, destinations, and application actions from one keyboard- and touch-friendly workspace.',
   },
   {
-    title: 'Drift stays authoritative',
-    description:
-      'Durable records remain tenant-scoped in Drift while Beacon keeps only rebuildable read projections.',
+    key: 'drift',
+    title: (
+      <>
+        <ProjectLink name="Drift" /> stays authoritative
+      </>
+    ),
+    description: (
+      <>
+        Durable records remain tenant-scoped in <ProjectLink name="Drift" /> while Beacon keeps only
+        rebuildable read projections.
+      </>
+    ),
   },
   {
-    title: 'Execution stays with Compactor',
-    description:
-      'Beacon manages definitions and events without pretending to own redirect traffic or cache policy.',
+    key: 'compactor',
+    title: (
+      <>
+        Execution stays with <ProjectLink name="Compactor" />
+      </>
+    ),
+    description: (
+      <>
+        Beacon manages definitions and events without pretending to own redirect traffic or cache
+        policy.
+      </>
+    ),
   },
 ] as const;
 
 const paths = [
   {
     title: 'Tutorial',
-    description: 'Connect Drift, run Beacon locally, and create a first redirect.',
+    description: (
+      <>
+        Connect <ProjectLink name="Drift" />, run Beacon locally, and create a first redirect.
+      </>
+    ),
     href: '/docs/tutorial',
   },
   {
@@ -46,7 +70,12 @@ const paths = [
   },
   {
     title: 'Reference',
-    description: 'Check management routes, Compactor contracts, and environment variables.',
+    description: (
+      <>
+        Check management routes, <ProjectLink name="Compactor" /> contracts, and environment
+        variables.
+      </>
+    ),
     href: '/docs/reference',
   },
 ] as const;
@@ -118,7 +147,8 @@ export default function HomePage() {
             <div className="hero-panel-card">
               <strong>Honest system boundaries</strong>
               <p>
-                Drift owns durable state. Compactor owns execution. Beacon keeps the workflow clear.
+                <ProjectLink name="Drift" /> owns durable state. <ProjectLink name="Compactor" />{' '}
+                owns execution. Beacon keeps the workflow clear.
               </p>
             </div>
             <div className="hero-panel-card">
@@ -142,7 +172,7 @@ export default function HomePage() {
           </div>
           <div className="card-grid">
             {principles.map((principle) => (
-              <article className="info-card" key={principle.title}>
+              <article className="info-card" key={principle.key}>
                 <h3>{principle.title}</h3>
                 <p>{principle.description}</p>
               </article>

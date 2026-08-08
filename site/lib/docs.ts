@@ -15,6 +15,7 @@ import type { AnchorHTMLAttributes, ReactNode } from 'react';
 import type { TOCItemType } from 'fumadocs-core/toc';
 import { visit } from 'unist-util-visit';
 
+import { projectSites } from '@/components/project-link';
 import { titleForDoc } from '@/lib/format';
 
 const docsRoot = path.resolve(process.cwd(), '../docs');
@@ -101,6 +102,61 @@ function rewriteHref(filePath: string, href: string): string {
   return `${githubBase}/${repositoryPath}${hash}`;
 }
 
+function linkProjectMentions(node: unknown): void {
+  if (!node || typeof node !== 'object') {
+    return;
+  }
+
+  const current = node as {
+    type?: string;
+    url?: string;
+    value?: string;
+    children?: unknown[];
+  };
+
+  if (current.type === 'link') {
+    const label = toString(current as Link).trim();
+    if (label === 'Drift' || label === 'Compactor') {
+      current.url = projectSites[label];
+    }
+    return;
+  }
+
+  if (!current.children) {
+    return;
+  }
+
+  current.children = current.children.flatMap((child) => {
+    if (!child || typeof child !== 'object') {
+      return [child];
+    }
+
+    const text = child as { type?: string; value?: string };
+    if (text.type !== 'text' || !text.value || !/\b(?:Drift|Compactor)\b/.test(text.value)) {
+      linkProjectMentions(child);
+      return [child];
+    }
+
+    return text.value.split(/\b(Drift|Compactor)\b/).flatMap<unknown>((part) => {
+      if (!part) {
+        return [];
+      }
+
+      if (part === 'Drift' || part === 'Compactor') {
+        return [
+          {
+            type: 'link',
+            url: projectSites[part],
+            children: [{ type: 'text', value: part }],
+          },
+        ];
+      }
+
+      return [{ type: 'text', value: part }];
+    });
+  });
+}
+
 function createBody(markdown: string, filePath: string): DocPage {
   const processor = unified().use(remarkParse).use(remarkGfm);
   const tree = processor.parse(markdown) as MdastRoot;
@@ -154,6 +210,8 @@ function createBody(markdown: string, filePath: string): DocPage {
 
     return true;
   });
+
+  linkProjectMentions(tree);
 
   const hast = unified().use(remarkRehype, { clobberPrefix: '' }).runSync(tree) as HastRoot;
 

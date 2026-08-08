@@ -419,6 +419,7 @@ svg {
 }
 
 .path-card a,
+.project-link,
 .docs-article a,
 .footer-links a {
   color: var(--accent);
