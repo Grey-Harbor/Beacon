@@ -83,7 +83,7 @@ export default async function DocsPageRoute({ params }: DocsPageProps) {
           ) : null}
           <div className="docs-root">
             <article className="docs-article">
-              <DocsTitle>{linkProjectNames(title)}</DocsTitle>
+              <DocsTitle>{title}</DocsTitle>
               {description ? (
                 <DocsDescription>{linkProjectNames(description)}</DocsDescription>
               ) : null}

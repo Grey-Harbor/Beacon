@@ -20,11 +20,7 @@ const principles = [
   },
   {
     key: 'drift',
-    title: (
-      <>
-        <ProjectLink name="Drift" /> stays authoritative
-      </>
-    ),
+    title: 'Drift stays authoritative',
     description: (
       <>
         Durable records remain tenant-scoped in <ProjectLink name="Drift" /> while Beacon keeps only
@@ -34,11 +30,7 @@ const principles = [
   },
   {
     key: 'compactor',
-    title: (
-      <>
-        Execution stays with <ProjectLink name="Compactor" />
-      </>
-    ),
+    title: 'Execution stays with Compactor',
     description: (
       <>
         Beacon manages definitions and events without pretending to own redirect traffic or cache

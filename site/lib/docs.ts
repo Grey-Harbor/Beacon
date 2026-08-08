@@ -114,6 +114,27 @@ function linkProjectMentions(node: unknown): void {
     children?: unknown[];
   };
 
+  if (current.type === 'heading') {
+    if (!current.children) {
+      return;
+    }
+
+    current.children = current.children.map((child) => {
+      if (!child || typeof child !== 'object') {
+        return child;
+      }
+
+      const link = child as { type?: string; children?: unknown[] };
+      const label = link.type === 'link' ? toString(link as Link).trim() : '';
+      if (label === 'Drift' || label === 'Compactor') {
+        return { type: 'text', value: label };
+      }
+
+      return child;
+    });
+    return;
+  }
+
   if (current.type === 'link') {
     const label = toString(current as Link).trim();
     if (label === 'Drift' || label === 'Compactor') {
