@@ -171,6 +171,26 @@ describe('AuthenticatedShell', () => {
     expect(editor).toHaveValue('');
   });
 
+  it('handles menu arrows before slash-menu focus moves on the next frame', async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    renderShell();
+    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
+    search.focus();
+
+    fireEvent.keyDown(search, { key: '/' });
+    const addRedirect = await screen.findByRole('menuitem', { name: /Add redirect/ });
+    expect(search).toHaveFocus();
+
+    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    expect(addRedirect).toHaveFocus();
+    fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
+    expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
+  });
+
   it('navigates the slash menu from the search field with arrows and Enter', async () => {
     renderShell();
     const search = screen.getByRole('combobox', { name: 'Search Beacon' });
