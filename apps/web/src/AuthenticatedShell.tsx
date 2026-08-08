@@ -131,6 +131,51 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }, [menuOpen]);
 
   useEffect(() => {
+    if (!menuOpen) return;
+
+    function handleApplicationMenuKeyDown(event: KeyboardEvent) {
+      const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
+      const current = items.indexOf(document.activeElement as HTMLAnchorElement);
+      if (event.key === 'Tab') {
+        setMenuOpen(false);
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeApplicationMenu(true);
+        return;
+      }
+      if ((event.key === 'Enter' || event.key === ' ') && current >= 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        items[current]?.click();
+        return;
+      }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!items.length) return;
+      const next =
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? items.length - 1
+            : event.key === 'ArrowDown'
+              ? current < 0
+                ? 0
+                : (current + 1) % items.length
+              : current < 0
+                ? items.length - 1
+                : (current - 1 + items.length) % items.length;
+      items[next]?.focus();
+    }
+
+    document.addEventListener('keydown', handleApplicationMenuKeyDown, true);
+    return () => document.removeEventListener('keydown', handleApplicationMenuKeyDown, true);
+  }, [menuOpen]);
+
+  useEffect(() => {
     if (accountOpen) window.requestAnimationFrame(() => accountItem.current?.focus());
   }, [accountOpen]);
 
@@ -194,42 +239,6 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
       event.preventDefault();
       openResult(results[activeResult]);
     }
-  }
-
-  function handleMenuKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
-    if (!menuOpen) return;
-    const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
-    const current = items.indexOf(document.activeElement as HTMLAnchorElement);
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeApplicationMenu(true);
-      return;
-    }
-    if (event.key === 'Tab') {
-      setMenuOpen(false);
-      return;
-    }
-    if ((event.key === 'Enter' || event.key === ' ') && current >= 0) {
-      event.preventDefault();
-      items[current]?.click();
-      return;
-    }
-    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-    event.preventDefault();
-    if (!items.length) return;
-    const next =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? items.length - 1
-          : event.key === 'ArrowDown'
-            ? current < 0
-              ? 0
-              : (current + 1) % items.length
-            : current < 0
-              ? items.length - 1
-              : (current - 1 + items.length) % items.length;
-    items[next]?.focus();
   }
 
   function handleAccountKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
@@ -296,7 +305,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
         </div>
 
         <div className="navigation-search-row">
-          <div className="search-frame" onKeyDown={handleMenuKeyDown}>
+          <div className="search-frame">
             <div className="search-row">
               <button
                 ref={menuTrigger}

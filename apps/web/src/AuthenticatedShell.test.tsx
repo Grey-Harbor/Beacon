@@ -171,21 +171,21 @@ describe('AuthenticatedShell', () => {
     expect(editor).toHaveValue('');
   });
 
-  it('handles menu arrows before slash-menu focus moves on the next frame', async () => {
+  it('handles menu arrows from page content before focus moves on the next frame', async () => {
     const frames: FrameRequestCallback[] = [];
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       frames.push(callback);
       return frames.length;
     });
-    renderShell();
-    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
-    search.focus();
+    renderShell(<button>Page action</button>);
+    const pageAction = screen.getByRole('button', { name: 'Page action' });
+    pageAction.focus();
 
-    fireEvent.keyDown(search, { key: '/' });
+    fireEvent.keyDown(pageAction, { key: '/' });
     const addRedirect = await screen.findByRole('menuitem', { name: /Add redirect/ });
-    expect(search).toHaveFocus();
+    expect(pageAction).toHaveFocus();
 
-    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    fireEvent.keyDown(pageAction, { key: 'ArrowDown' });
     expect(addRedirect).toHaveFocus();
     fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
     expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
