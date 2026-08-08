@@ -11,3 +11,4 @@ PLAN.md
 *.sqlite-wal
 *.tsbuildinfo
 .DS_Store
+.beacon-build.lock

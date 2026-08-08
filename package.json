@@ -11,7 +11,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build -w @beacon/shared && npm run build -w @beacon/server && npm run build -w @beacon/web",
+    "build": "node scripts/build.mjs",
     "check": "npm run build -w @beacon/shared && npm run check -w @beacon/server && npm run check -w @beacon/web",
     "dev": "npm run dev -w @beacon/server",
     "dev:web": "npm run dev -w @beacon/web",
@@ -22,7 +22,7 @@
     "site:preview": "npm --prefix site run preview",
     "preview": "npm --prefix site run preview",
     "start": "npm run start -w @beacon/server",
-    "test": "npm run build -w @beacon/shared && node --test scripts/generate-beacon-secrets.test.mjs && npm run test -w @beacon/server && npm run test -w @beacon/web",
+    "test": "npm run build -w @beacon/shared && node --test scripts/*.test.mjs && npm run test -w @beacon/server && npm run test -w @beacon/web",
     "format": "prettier --write . --ignore-unknown",
     "format:check": "prettier --check . --ignore-unknown",
     "ci": "npm run format:check && npm run docs:check && npm run check && npm test && npm run build"
