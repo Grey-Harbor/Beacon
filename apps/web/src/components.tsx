@@ -36,9 +36,7 @@ export function AuthShell({
         <div>
           <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>
-          <p className="lede">
-            A calm place to manage the redirect infrastructure Compactor serves.
-          </p>
+          <p className="lede">A calm place to manage redirects.</p>
         </div>
       </section>
       <section className="auth-panel">{children}</section>

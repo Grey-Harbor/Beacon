@@ -2,7 +2,7 @@
 
 # Beacon
 
-Use Beacon to manage self-hosted redirect infrastructure backed by Drift and executed by Compactor. Start with the [getting-started tutorial](./docs/tutorial/getting-started.md) for local development or the [self-hosting guide](./docs/how-to/self-hosting.md) for the bundled Compose deployment.
+Use Beacon to create, organize, and understand redirects from one focused management application. Start with the [getting-started tutorial](./docs/tutorial/getting-started.md) for local development or the [Compose deployment guide](./docs/how-to/self-hosting.md) for production.
 
 Beacon is a focused management application, not a redirect runtime, analytics platform, or multi-user administration console. Drift owns authoritative persistence and tenant isolation. Compactor owns redirect execution, caching, and event production. Beacon owns management workflows and rebuildable read projections.
 

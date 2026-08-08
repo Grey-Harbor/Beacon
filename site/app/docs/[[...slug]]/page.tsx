@@ -15,13 +15,13 @@ interface DocsPageProps {
 }
 
 const docsIndexDescription =
-  'Browse Beacon tutorials, how-to guides, API reference, and explanations for self-hosted redirect management.';
+  'Browse Beacon tutorials, how-to guides, API reference, and explanations for redirect management.';
 
 const docsIndexKeywords = [
   'Beacon documentation',
   'Beacon redirect management tutorial',
   'Beacon API reference',
-  'self-hosted redirect guides',
+  'redirect management guides',
   'Compactor integration',
 ] as const;
 

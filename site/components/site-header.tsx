@@ -17,7 +17,7 @@ export function SiteHeader() {
         </span>
         <span className="brand-copy">
           <span className="brand-name">Beacon</span>
-          <span className="brand-tag">Redirect infrastructure, kept clear</span>
+          <span className="brand-tag">Redirect management, kept clear</span>
         </span>
       </Link>
 

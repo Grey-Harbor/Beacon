@@ -3,11 +3,10 @@ import type { Metadata } from 'next';
 export const siteName = 'Beacon';
 export const siteUrl = 'https://beacon.greyharborsoftware.com';
 export const siteDescription =
-  'Search-first management for self-hosted redirect infrastructure, with authoritative data in Drift and redirect execution by Compactor.';
+  'A calm, search-first place to create, find, change, and review redirects.';
 export const siteKeywords = [
   'redirect management',
-  'self-hosted redirects',
-  'URL infrastructure',
+  'URL redirects',
   'redirect operations',
   'Drift',
   'Compactor',
@@ -19,7 +18,7 @@ export const socialCard = {
   url: '/brand/social-card.png',
   width: 1731,
   height: 909,
-  alt: 'Beacon redirect management for self-hosted infrastructure',
+  alt: 'Beacon search-first redirect management',
 } as const;
 
 function withTrailingSlash(path: string): string {

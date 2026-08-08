@@ -5,7 +5,7 @@ import { SiteFooter } from '@/components/site-footer';
 import { buildPageMetadata, siteDescription, siteName, siteUrl, socialCard } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Search-first management for self-hosted redirects',
+  title: 'Search-first redirect management',
   description: siteDescription,
   canonicalPath: '/',
 });
@@ -36,7 +36,7 @@ const paths = [
   },
   {
     title: 'How-to',
-    description: 'Self-host the complete stack and operate its credentials and projections.',
+    description: 'Deploy the complete stack and operate its credentials and projections.',
     href: '/docs/how-to',
   },
   {
@@ -90,11 +90,10 @@ export default function HomePage() {
       <main className="landing" id="main">
         <section className="hero">
           <div className="hero-copy">
-            <span className="eyebrow">Redirect management for self-hosted infrastructure</span>
+            <span className="eyebrow">Search-first redirect management</span>
             <h1>Beacon</h1>
             <p className="lede">
-              A calm, focused place to create, find, change, and review redirects while Drift
-              preserves the record and Compactor handles the traffic.
+              A calm, focused place to create, find, change, and review redirects.
             </p>
             <div className="actions">
               <Link className="button primary" href="/docs/tutorial">
@@ -156,9 +155,9 @@ export default function HomePage() {
             <p className="eyebrow">Why it exists</p>
             <h2 id="why-heading">A management surface, not the redirect runtime</h2>
             <p>
-              Redirect infrastructure needs deliberate editing, reusable destinations, lifecycle
-              controls, and enough operational history to understand changes. It does not need the
-              management application to become the traffic engine or the system of record.
+              Redirects need deliberate editing, reusable destinations, lifecycle controls, and
+              enough operational history to understand changes. The management application does not
+              need to become the traffic engine or the system of record.
             </p>
           </div>
         </section>
