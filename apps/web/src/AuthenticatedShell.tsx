@@ -22,6 +22,7 @@ import {
   type ReactNode,
 } from 'react';
 import { api, json } from './api';
+import { BrandMark } from './components';
 import { Link, useNavigate, usePath } from './router';
 import type { Session } from './types';
 
@@ -252,9 +253,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
       <header className="global-navigation" ref={shellNavigation}>
         <div className="navigation-primary-row">
           <Link className="brand-home-link" to="/" aria-label="Beacon home">
-            <span className="brand-mark small" aria-hidden="true">
-              B
-            </span>
+            <BrandMark small />
             <span className="brand-name">Beacon</span>
           </Link>
           <div className="account-control">

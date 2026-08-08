@@ -1,9 +1,17 @@
 import type { InputHTMLAttributes, ReactNode } from 'react';
 
+export function BrandMark({ small = false }: { small?: boolean }) {
+  return (
+    <span className={`brand-mark${small ? ' small' : ''}`} aria-hidden="true">
+      <img src="/beacon-mark.svg" alt="" />
+    </span>
+  );
+}
+
 export function Loading() {
   return (
     <main className="centered-page" aria-live="polite">
-      <div className="brand-mark">B</div>
+      <BrandMark />
       <p className="muted">Preparing your workspace…</p>
     </main>
   );
@@ -22,7 +30,7 @@ export function AuthShell({
     <main className="auth-page">
       <section className="auth-intro">
         <div className="brand-lockup">
-          <span className="brand-mark">B</span>
+          <BrandMark />
           <span>Beacon</span>
         </div>
         <div>

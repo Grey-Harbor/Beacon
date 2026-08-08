@@ -49,6 +49,7 @@ describe('AuthenticatedShell', () => {
     expect(home).toHaveAttribute('href', '/');
     expect(home).toHaveTextContent('Beacon');
     expect(home).not.toHaveTextContent('Compactor');
+    expect(home.querySelector('img')).toHaveAttribute('src', '/beacon-mark.svg');
     expect(screen.getByText('Workspace content')).toBeInTheDocument();
   });
 

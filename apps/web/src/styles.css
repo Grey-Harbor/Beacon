@@ -78,26 +78,23 @@ a:focus-visible {
   color: var(--muted);
 }
 .brand-mark {
-  display: inline-grid;
-  place-items: center;
+  display: inline-block;
   width: 54px;
   height: 54px;
   border-radius: 18px;
-  color: white;
-  background: var(--accent);
-  font:
-    700 25px 'Avenir Next',
-    Avenir,
-    sans-serif;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.2),
     0 10px 30px rgba(49, 83, 70, 0.2);
+}
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .brand-mark.small {
   width: 34px;
   height: 34px;
   border-radius: 11px;
-  font-size: 16px;
   box-shadow: none;
 }
 .brand-lockup {
