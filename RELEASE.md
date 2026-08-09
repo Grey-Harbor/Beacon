@@ -14,6 +14,7 @@ Beacon v0.1.0 is the first end-to-end management application built on [Drift][dr
 - Redirect QR code export, inline statistics, recent management activity, and calm table-based reporting.
 - A keyboard-accessible two-row navigation shell with asset suggestions, application commands, and account actions.
 - Reliable bodyless account sign-out and projection rebuild requests.
+- Consistently aligned editor fields when adjacent controls include supporting guidance.
 - A composed Next.js 16 and React 19 interface with focused screen and presentation modules.
 - A guided-beam visual identity shared by the application and public documentation website.
 - A self-hosted Compose topology pinned to [Drift][drift] v0.1.0 and [Compactor][compactor] v0.2.0 with a 30-second redirect cache TTL.
