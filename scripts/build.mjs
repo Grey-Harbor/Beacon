@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const lockPath = resolve(root, '.beacon-build.lock');
-const devLockPath = resolve(root, 'apps/web/.next-dev/dev/lock');
+const devLockPath = resolve(root, 'apps/web/.next/dev/lock');
 const generatedPaths = [
   resolve(root, 'apps/web/.next'),
   resolve(root, 'apps/web/out'),

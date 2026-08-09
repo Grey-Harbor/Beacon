@@ -1,7 +1,6 @@
 node_modules/
 dist/
 .next/
-.next-dev/
 apps/web/next-env.d.ts
 out/
 coverage/
