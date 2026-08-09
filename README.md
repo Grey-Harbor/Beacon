@@ -2,13 +2,41 @@
 
 # Beacon
 
-Use Beacon to create, organize, and understand redirects from one focused management application. Start with the [getting-started tutorial](./docs/tutorial/getting-started.md) for local development or the [Compose deployment guide](./docs/how-to/self-hosting.md) for production.
+Beacon is a focused redirect-management application for teams that want link operations to stay understandable.
 
-Beacon is a focused management application, not a redirect runtime, analytics platform, or multi-user administration console. [Drift][drift] owns authoritative persistence and tenant isolation. [Compactor][compactor] owns redirect execution, caching, and event production. Beacon owns management workflows and rebuildable read projections.
+It gives operators a calm, search-first place to create redirects, reuse destinations, review activity, and understand runtime events—while [Drift][drift] keeps authoritative state and [Compactor][compactor] serves redirect traffic.
 
-v0.1.0 provides search-first redirect and destination management, active/disabled/archive lifecycles, destination reuse, QR code export, first-run single-administrator setup, management activity, [Compactor][compactor] event history, basic reports, and rebuildable SQLite projections.
+## Start here
 
-Use [the documentation index](./docs/README.md) to select tutorials, how-to guides, reference, or explanations. [Architecture](./ARCHITECTURE.md) defines system boundaries, and [RELEASE.md](./RELEASE.md) is the canonical current-release summary and annotated-tag description.
+- [Getting started tutorial](./docs/tutorial/getting-started.md) — connect a Drift tenant, run Beacon locally, and create your first redirect.
+- [Self-hosting guide](./docs/how-to/self-hosting.md) — deploy the bundled Beacon, Drift, and Compactor stack with Compose.
+- [API reference](./docs/reference/api.md) — management routes, Compactor integration contracts, validation, and failures.
+- [Environment reference](./docs/reference/environment.md) — every setting, default, secret, and bundled service mapping.
+- [Architecture](./ARCHITECTURE.md) — ownership, persistence, security, and extension boundaries.
+- [Current release](./RELEASE.md) — supported behavior, operational notes, and known limits for v0.1.0.
+
+## Run the complete stack
+
+Beacon includes a Compose topology that builds the management application and connects pinned Drift and Compactor releases. Follow the [self-hosting guide](./docs/how-to/self-hosting.md) to generate independent credentials, bootstrap the Drift tenant, start the services, and place the management interface behind HTTPS.
+
+## Why it exists
+
+Redirects rarely stay as a handful of source and destination pairs. They become shared operational data with lifecycle state, reusable targets, activity history, runtime events, and people who need to understand what will happen before they publish a change.
+
+Beacon keeps that work explicit:
+
+- search brings redirects, destinations, and common actions into one workspace;
+- reusable destinations keep shared target changes intentional;
+- Drift remains authoritative while local SQLite projections stay disposable and rebuildable;
+- Compactor owns redirect execution, caching, and event production;
+- optimistic versions surface concurrent edits instead of silently overwriting them; and
+- activity, request history, reports, and QR export stay close to the assets they describe.
+
+## What it is not
+
+Beacon is not a redirect runtime, hosted link platform, billing-grade analytics system, identity provider, or general-purpose administration console. v0.1.0 deliberately supports one Drift tenant, one administrator, and one Beacon replica. Redirect changes can take up to the configured 30-second Compactor cache window to propagate.
+
+Use [the documentation index](./docs/README.md) when you need a tutorial, focused operating procedure, exact reference, or architectural explanation.
 
 [compactor]: https://compactor.greyharborsoftware.com
 [drift]: https://drift.greyharborsoftware.com
