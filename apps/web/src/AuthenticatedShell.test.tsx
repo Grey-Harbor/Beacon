@@ -72,7 +72,27 @@ describe('AuthenticatedShell', () => {
     );
   });
 
-  it('supports keyboard search selection and clears state after navigation', async () => {
+  it('opens actions from the search menu and activates them from the input', async () => {
+    renderShell();
+    const trigger = screen.getByRole('button', { name: 'Open search menu' });
+    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
+
+    fireEvent.click(trigger);
+
+    expect(search).toHaveFocus();
+    expect(screen.getByRole('listbox', { name: 'Search menu' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /Add redirect/ })).toBeInTheDocument();
+    expect(screen.queryByText('⌘ N')).not.toBeInTheDocument();
+    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    expect(search.getAttribute('aria-activedescendant')).toMatch(/action-0$/);
+    expect(search).toHaveValue('');
+    fireEvent.keyDown(search, { key: 'Enter' });
+
+    await waitFor(() => expect(window.location.pathname).toBe('/redirects/new'));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('completes asset titles while preserving the typed search query', async () => {
     vi.mocked(fetch).mockImplementation(() =>
       jsonResponse([
         {
@@ -92,17 +112,18 @@ describe('AuthenticatedShell', () => {
     renderShell();
     const search = screen.getByRole('combobox', { name: 'Search Beacon' });
 
+    fireEvent.click(screen.getByRole('button', { name: 'Open search menu' }));
     fireEvent.change(search, { target: { value: 'doc' } });
     expect(search).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('status')).toHaveTextContent('Searching…');
     await screen.findByRole('option', { name: /Documentation/ });
 
     fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(search.getAttribute('aria-activedescendant')).toMatch(/-0$/);
+    expect(search.getAttribute('aria-activedescendant')).toMatch(/result-0$/);
+    expect(search).toHaveValue('Documentation');
     fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(search.getAttribute('aria-activedescendant')).toMatch(/-1$/);
-    fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(search.getAttribute('aria-activedescendant')).toMatch(/-1$/);
+    expect(search.getAttribute('aria-activedescendant')).toMatch(/result-1$/);
+    expect(search).toHaveValue('Product site');
     fireEvent.keyDown(search, { key: 'Enter' });
 
     await waitFor(() => expect(window.location.pathname).toBe('/destinations/destination-2/edit'));
@@ -110,7 +131,41 @@ describe('AuthenticatedShell', () => {
     expect(search).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('supports mouse selection, Escape, no-match, and unavailable states', async () => {
+  it('restores a completion before closing and resumes from the typed query', async () => {
+    vi.mocked(fetch).mockImplementation(() =>
+      jsonResponse([
+        {
+          id: 'redirect-1',
+          kind: 'redirect',
+          title: 'Documentation',
+          subtitle: 'https://go.example/docs',
+        },
+      ]),
+    );
+    renderShell(<button>Page action</button>);
+    const pageAction = screen.getByRole('button', { name: 'Page action' });
+    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
+
+    pageAction.focus();
+    fireEvent.keyDown(pageAction, { key: '/' });
+    expect(search).toHaveFocus();
+    fireEvent.change(search, { target: { value: 'doc' } });
+    await screen.findByRole('option', { name: /Documentation/ });
+    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    expect(search).toHaveValue('Documentation');
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(search).toHaveValue('doc');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    expect(search).toHaveValue('Documentation');
+    fireEvent.keyDown(search, { key: 'x' });
+    expect(search).toHaveValue('docx');
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(pageAction).toHaveFocus();
+  });
+
+  it('supports click selection, clear, no-match, and unavailable states', async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock
       .mockImplementationOnce(() =>
@@ -128,12 +183,9 @@ describe('AuthenticatedShell', () => {
     renderShell();
     const search = screen.getByRole('combobox', { name: 'Search Beacon' });
 
+    fireEvent.click(screen.getByRole('button', { name: 'Open search menu' }));
     fireEvent.change(search, { target: { value: 'doc' } });
     await screen.findByRole('option', { name: /Documentation/ });
-    fireEvent.keyDown(search, { key: 'Escape' });
-    expect(search).toHaveValue('doc');
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    fireEvent.focus(search);
     fireEvent.click(screen.getByRole('option', { name: /Documentation/ }));
     await waitFor(() => expect(window.location.pathname).toBe('/redirects/redirect-1/edit'));
 
@@ -142,8 +194,13 @@ describe('AuthenticatedShell', () => {
       window.dispatchEvent(new Event('beacon:navigate'));
     });
     await waitFor(() => expect(search).toHaveValue(''));
+    fireEvent.click(screen.getByRole('button', { name: 'Open search menu' }));
     fireEvent.change(search, { target: { value: 'missing' } });
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('No matching assets'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(search).toHaveValue('');
+    expect(screen.getByRole('option', { name: /Add redirect/ })).toBeInTheDocument();
 
     fireEvent.change(search, { target: { value: 'offline' } });
     await waitFor(() =>
@@ -151,66 +208,42 @@ describe('AuthenticatedShell', () => {
     );
   });
 
-  it('opens the slash menu, roves focus, restores focus, and ignores editor fields', async () => {
-    renderShell(<input aria-label="Editor field" />);
-    const trigger = screen.getByRole('button', { name: 'Open application menu' });
+  it('keeps the shell available when search returns an invalid payload', async () => {
+    vi.mocked(fetch).mockImplementation(() => jsonResponse(null));
+    renderShell();
+    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
 
-    fireEvent.keyDown(document, { key: '/' });
-    const firstItem = await screen.findByRole('menuitem', { name: /Add redirect/ });
-    expect(firstItem).toHaveFocus();
-    fireEvent.keyDown(firstItem, { key: 'ArrowDown' });
-    expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
-    fireEvent.keyDown(document.activeElement as Element, { key: 'Escape' });
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Open search menu' }));
+    fireEvent.change(search, { target: { value: 'docs' } });
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent('Search is unavailable'),
+    );
+    expect(screen.getByText('Workspace content')).toBeInTheDocument();
+  });
+
+  it('opens from slash across route changes and ignores editable fields', () => {
+    renderShell(<input aria-label="Editor field" />);
+    const trigger = screen.getByRole('button', { name: 'Open search menu' });
+    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
+
+    fireEvent.keyDown(trigger, { key: '/' });
+    expect(search).toHaveFocus();
+    expect(screen.getByRole('option', { name: /Add redirect/ })).toBeInTheDocument();
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
 
     const editor = screen.getByRole('textbox', { name: 'Editor field' });
     editor.focus();
     fireEvent.keyDown(editor, { key: '/' });
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    expect(editor).toHaveValue('');
-  });
-
-  it('handles menu arrows before slash-menu focus moves on the next frame', async () => {
-    const frames: FrameRequestCallback[] = [];
-    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
-      frames.push(callback);
-      return frames.length;
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    act(() => {
+      window.history.pushState(null, '', '/settings');
+      window.dispatchEvent(new Event('beacon:navigate'));
     });
-    renderShell();
-    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
-    search.focus();
-
-    fireEvent.keyDown(search, { key: '/' });
-    const addRedirect = await screen.findByRole('menuitem', { name: /Add redirect/ });
+    fireEvent.keyDown(trigger, { key: 'Unidentified', code: 'Slash' });
     expect(search).toHaveFocus();
-
-    fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(addRedirect).toHaveFocus();
-    fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
-    expect(screen.getByRole('menuitem', { name: 'Add destination' })).toHaveFocus();
-  });
-
-  it('navigates the slash menu from the search field with arrows and Enter', async () => {
-    renderShell();
-    const search = screen.getByRole('combobox', { name: 'Search Beacon' });
-    search.focus();
-
-    fireEvent.keyDown(search, { key: '/' });
-    const addRedirect = await screen.findByRole('menuitem', { name: /Add redirect/ });
-    expect(addRedirect).toHaveFocus();
-    expect(search).toHaveValue('');
-
-    fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
-    const addDestination = screen.getByRole('menuitem', { name: 'Add destination' });
-    expect(addDestination).toHaveFocus();
-    fireEvent.keyDown(addDestination, { key: 'ArrowUp' });
-    expect(addRedirect).toHaveFocus();
-    fireEvent.keyDown(addRedirect, { key: 'ArrowDown' });
-    fireEvent.keyDown(addDestination, { key: 'Enter' });
-
-    await waitFor(() => expect(window.location.pathname).toBe('/destinations/new'));
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('keeps overlays exclusive and signs out from the account popover', async () => {
@@ -223,10 +256,10 @@ describe('AuthenticatedShell', () => {
     });
     renderShell(undefined, onLogout);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Open application menu' }));
-    expect(await screen.findByRole('menuitem', { name: /Add redirect/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Open search menu' }));
+    expect(screen.getByRole('option', { name: /Add redirect/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Open account menu/ }));
-    expect(screen.queryByRole('menuitem', { name: /Add redirect/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Add redirect/ })).not.toBeInTheDocument();
     expect(screen.getByText('harbor-admin')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
@@ -240,6 +273,7 @@ describe('AuthenticatedShell', () => {
   it('resets an open search when another route is announced', async () => {
     renderShell();
     const search = screen.getByRole('combobox', { name: 'Search Beacon' });
+    fireEvent.click(screen.getByRole('button', { name: 'Open search menu' }));
     fireEvent.change(search, { target: { value: 'docs' } });
 
     act(() => {

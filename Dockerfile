@@ -6,6 +6,7 @@ COPY packages/server/package.json packages/server/package.json
 COPY packages/shared/package.json packages/shared/package.json
 RUN npm ci
 COPY tsconfig.base.json .prettierrc.json ./
+COPY scripts/build.mjs ./scripts/build.mjs
 COPY apps ./apps
 COPY packages ./packages
 RUN npm run build

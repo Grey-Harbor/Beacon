@@ -18,6 +18,7 @@ import {
   useId,
   useRef,
   useState,
+  type ClipboardEvent as ReactClipboardEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from 'react';
@@ -34,25 +35,75 @@ interface AuthenticatedShellProps {
 
 type SearchStatus = 'idle' | 'loading' | 'success' | 'error';
 
+interface PaletteAction {
+  id: string;
+  label: string;
+  description: string;
+  to: string;
+  icon: ReactNode;
+  divider?: boolean;
+}
+
+const paletteActions: PaletteAction[] = [
+  {
+    id: 'add-redirect',
+    label: 'Add redirect',
+    description: 'Create a new redirect',
+    to: '/redirects/new',
+    icon: <CirclePlus />,
+  },
+  {
+    id: 'add-destination',
+    label: 'Add destination',
+    description: 'Create a reusable destination',
+    to: '/destinations/new',
+    icon: <Target />,
+  },
+  {
+    id: 'reporting',
+    label: 'Reporting',
+    description: 'Review operational reports',
+    to: '/reports',
+    icon: <BarChart3 />,
+    divider: true,
+  },
+  {
+    id: 'activity',
+    label: 'Recent activity',
+    description: 'Review recent changes',
+    to: '/activity',
+    icon: <Activity />,
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    description: 'Manage Beacon settings',
+    to: '/settings',
+    icon: <Settings />,
+  },
+];
+
 export function AuthenticatedShell({ session, onLogout, children }: AuthenticatedShellProps) {
   const path = usePath();
   const navigate = useNavigate();
   const shellNavigation = useRef<HTMLElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
-  const menuTrigger = useRef<HTMLButtonElement>(null);
+  const paletteTrigger = useRef<HTMLButtonElement>(null);
   const accountTrigger = useRef<HTMLButtonElement>(null);
-  const menuItems = useRef<Array<HTMLAnchorElement | null>>([]);
+  const paletteReturnFocus = useRef<HTMLElement | null>(null);
   const accountItem = useRef<HTMLButtonElement>(null);
-  const menuReturnFocus = useRef<HTMLElement | null>(null);
+  const keyDownHandler = useRef<(event: KeyboardEvent) => void>(() => {});
   const resultsId = useId();
   const [query, setQuery] = useState('');
+  const [displayValue, setDisplayValue] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [activeResult, setActiveResult] = useState(-1);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState(-1);
+  const [completion, setCompletion] = useState<SearchResult | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountError, setAccountError] = useState('');
+  const hasQuery = Boolean(query.trim());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -60,25 +111,25 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     if (!trimmed) {
       setResults([]);
       setSearchStatus('idle');
-      setActiveResult(-1);
+      setActiveItem(-1);
       return () => controller.abort();
     }
 
     setSearchStatus('loading');
     const timer = window.setTimeout(() => {
-      api<SearchResult[]>(`/api/v1/search?q=${encodeURIComponent(query)}`, {
+      api<unknown>(`/api/v1/search?q=${encodeURIComponent(query)}`, {
         signal: controller.signal,
       })
-        .then((matches) => {
-          setResults(matches);
+        .then((body) => {
+          setResults(parseSearchResults(body));
           setSearchStatus('success');
-          setActiveResult(-1);
+          setActiveItem(-1);
         })
-        .catch((reason: unknown) => {
+        .catch(() => {
           if (controller.signal.aborted) return;
           setResults([]);
           setSearchStatus('error');
-          setActiveResult(-1);
+          setActiveItem(-1);
         });
     }, 120);
 
@@ -89,158 +140,184 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }, [query]);
 
   useEffect(() => {
-    setQuery('');
-    setResults([]);
-    setSearchStatus('idle');
-    setSearchOpen(false);
-    setActiveResult(-1);
-    setMenuOpen(false);
+    clearPalette();
     setAccountOpen(false);
   }, [path]);
 
   useEffect(() => {
     function closeOnOutsideClick(event: PointerEvent) {
-      if (!shellNavigation.current?.contains(event.target as Node)) closeOverlays();
+      if (!shellNavigation.current?.contains(event.target as Node)) {
+        closePalette();
+        setAccountOpen(false);
+      }
     }
     document.addEventListener('pointerdown', closeOnOutsideClick);
     return () => document.removeEventListener('pointerdown', closeOnOutsideClick);
   }, []);
 
   useEffect(() => {
-    function openMenuShortcut(event: KeyboardEvent) {
-      if (
-        event.key !== '/' ||
-        event.defaultPrevented ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey
-      ) {
-        return;
-      }
-      const target = event.target instanceof HTMLElement ? event.target : null;
-      if (isTextEntry(target) && target !== searchInput.current) return;
-      event.preventDefault();
-      openApplicationMenu(target ?? menuTrigger.current);
+    function onWindowKeyDown(event: KeyboardEvent) {
+      keyDownHandler.current(event);
     }
-    document.addEventListener('keydown', openMenuShortcut);
-    return () => document.removeEventListener('keydown', openMenuShortcut);
+    window.addEventListener('keydown', onWindowKeyDown, true);
+    return () => window.removeEventListener('keydown', onWindowKeyDown, true);
   }, []);
-
-  useEffect(() => {
-    if (menuOpen) window.requestAnimationFrame(() => menuItems.current[0]?.focus());
-  }, [menuOpen]);
 
   useEffect(() => {
     if (accountOpen) window.requestAnimationFrame(() => accountItem.current?.focus());
   }, [accountOpen]);
 
-  function closeOverlays() {
-    setSearchOpen(false);
-    setActiveResult(-1);
-    setMenuOpen(false);
-    setAccountOpen(false);
+  function clearPalette() {
+    setQuery('');
+    setDisplayValue('');
+    setResults([]);
+    setSearchStatus('idle');
+    setPaletteOpen(false);
+    setActiveItem(-1);
+    setCompletion(null);
   }
 
-  function openApplicationMenu(returnFocus: HTMLElement | null) {
-    menuReturnFocus.current = returnFocus;
-    setSearchOpen(false);
-    setActiveResult(-1);
-    setAccountOpen(false);
-    setMenuOpen(true);
+  function closePalette(restoreFocus = false) {
+    clearPalette();
+    if (restoreFocus) focusWithoutScrolling(paletteReturnFocus.current ?? paletteTrigger.current);
   }
 
-  function closeApplicationMenu(restoreFocus = false) {
-    setMenuOpen(false);
-    if (restoreFocus) {
-      window.requestAnimationFrame(() => (menuReturnFocus.current ?? menuTrigger.current)?.focus());
-    }
+  function openPalette(returnFocus: HTMLElement | null) {
+    paletteReturnFocus.current = returnFocus;
+    setAccountOpen(false);
+    setPaletteOpen(true);
+    focusWithoutScrolling(searchInput.current);
+  }
+
+  function setQueryFromInput(value: string) {
+    setQuery(value);
+    setDisplayValue(value);
+    setCompletion(null);
+    setActiveItem(-1);
+    setPaletteOpen(true);
+  }
+
+  function previewResult(index: number) {
+    const result = results[index];
+    if (!result) return;
+    setActiveItem(index);
+    setCompletion(result);
+    setDisplayValue(result.title);
+  }
+
+  function activateAction(action: PaletteAction) {
+    closePalette();
+    navigate(action.to);
   }
 
   function openResult(result: SearchResult) {
-    setQuery('');
-    closeOverlays();
+    closePalette();
     searchInput.current?.blur();
     navigate(`/${result.kind}s/${result.id}/edit`);
   }
 
-  function handleSearchKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
-    if (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-      event.preventDefault();
-      openApplicationMenu(searchInput.current);
+  function activateActiveItem() {
+    if (activeItem < 0) return;
+    if (hasQuery) {
+      const result = results[activeItem];
+      if (result) openResult(result);
       return;
     }
-    if (menuOpen) return;
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      setSearchOpen(false);
-      setActiveResult(-1);
-      return;
-    }
-    if (event.key === 'ArrowDown') {
-      if (!results.length) return;
-      event.preventDefault();
-      setSearchOpen(true);
-      setActiveResult((current) => Math.min(current + 1, results.length - 1));
-      return;
-    }
-    if (event.key === 'ArrowUp') {
-      if (!results.length) return;
-      event.preventDefault();
-      setSearchOpen(true);
-      setActiveResult((current) => (current < 0 ? results.length - 1 : Math.max(current - 1, 0)));
-      return;
-    }
-    if (event.key === 'Enter' && activeResult >= 0 && results[activeResult]) {
-      event.preventDefault();
-      openResult(results[activeResult]);
-    }
+    const action = paletteActions[activeItem];
+    if (action) activateAction(action);
   }
 
-  function handleMenuKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
-    if (!menuOpen) return;
-    const items = menuItems.current.filter((item): item is HTMLAnchorElement => Boolean(item));
-    const current = items.indexOf(document.activeElement as HTMLAnchorElement);
+  function moveActiveItem(key: 'ArrowDown' | 'ArrowUp' | 'Home' | 'End') {
+    const count = hasQuery ? results.length : paletteActions.length;
+    if (!count) return;
+    const next =
+      key === 'Home'
+        ? 0
+        : key === 'End'
+          ? count - 1
+          : key === 'ArrowDown'
+            ? activeItem < 0
+              ? 0
+              : (activeItem + 1) % count
+            : activeItem < 0
+              ? count - 1
+              : (activeItem - 1 + count) % count;
+    if (hasQuery) previewResult(next);
+    else setActiveItem(next);
+  }
+
+  function restoreTypedQuery() {
+    setCompletion(null);
+    setDisplayValue(query);
+    setActiveItem(-1);
+  }
+
+  function handleSearchKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (completion && isTypingKey(event)) {
+      event.preventDefault();
+      setQueryFromInput(`${query}${event.key}`);
+      return;
+    }
+    if (completion && event.key === 'Backspace') {
+      event.preventDefault();
+      setQueryFromInput(query.slice(0, -1));
+      return;
+    }
+    if (completion && event.key === 'Delete') {
+      event.preventDefault();
+      restoreTypedQuery();
+      return;
+    }
     if (event.key === 'Escape') {
       event.preventDefault();
-      closeApplicationMenu(true);
+      if (completion) restoreTypedQuery();
+      else closePalette(true);
       return;
     }
     if (event.key === 'Tab') {
-      setMenuOpen(false);
+      closePalette();
       return;
     }
-    if ((event.key === 'Enter' || event.key === ' ') && current >= 0) {
+    if (event.key === 'Enter') {
       event.preventDefault();
-      items[current]?.click();
+      activateActiveItem();
       return;
     }
-    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-    event.preventDefault();
-    if (!items.length) return;
-    const next =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? items.length - 1
-          : event.key === 'ArrowDown'
-            ? current < 0
-              ? 0
-              : (current + 1) % items.length
-            : current < 0
-              ? items.length - 1
-              : (current - 1 + items.length) % items.length;
-    items[next]?.focus();
+    if (
+      event.key === 'ArrowDown' ||
+      event.key === 'ArrowUp' ||
+      event.key === 'Home' ||
+      event.key === 'End'
+    ) {
+      event.preventDefault();
+      moveActiveItem(event.key);
+    }
   }
 
-  function handleAccountKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      setAccountOpen(false);
-      window.requestAnimationFrame(() => accountTrigger.current?.focus());
-    } else if (event.key === 'Tab') {
-      setAccountOpen(false);
-    }
+  function handleSearchPaste(event: ReactClipboardEvent<HTMLInputElement>) {
+    if (!completion) return;
+    event.preventDefault();
+    setQueryFromInput(`${query}${event.clipboardData.getData('text')}`);
   }
+
+  function handlePaletteShortcut(event: KeyboardEvent) {
+    if (
+      !isSlashShortcut(event) ||
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (isTextEntry(target)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openPalette(target ?? paletteTrigger.current);
+  }
+
+  keyDownHandler.current = handlePaletteShortcut;
 
   async function logout() {
     setAccountError('');
@@ -253,7 +330,8 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     }
   }
 
-  const activeResultId = activeResult >= 0 ? `${resultsId}-${activeResult}` : undefined;
+  const activeItemId =
+    activeItem >= 0 ? `${resultsId}-${hasQuery ? 'result' : 'action'}-${activeItem}` : undefined;
 
   return (
     <div className="authenticated-shell">
@@ -272,15 +350,26 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
               aria-haspopup="menu"
               onClick={() => {
                 setAccountError('');
-                setSearchOpen(false);
-                setMenuOpen(false);
+                closePalette();
                 setAccountOpen((open) => !open);
               }}
             >
               <UserRound />
             </button>
             {accountOpen && (
-              <div className="account-menu" role="menu" onKeyDown={handleAccountKeyDown}>
+              <div
+                className="account-menu"
+                role="menu"
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setAccountOpen(false);
+                    accountTrigger.current?.focus();
+                  } else if (event.key === 'Tab') {
+                    setAccountOpen(false);
+                  }
+                }}
+              >
                 <p className="account-name">{session.user?.username}</p>
                 {accountError && (
                   <p className="account-error" role="alert">
@@ -296,17 +385,17 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
         </div>
 
         <div className="navigation-search-row">
-          <div className="search-frame" onKeyDown={handleMenuKeyDown}>
+          <div className="search-frame">
             <div className="search-row">
               <button
-                ref={menuTrigger}
+                ref={paletteTrigger}
                 className="icon-button menu-trigger"
-                aria-label="Open application menu"
-                aria-expanded={menuOpen}
-                aria-haspopup="menu"
+                aria-label="Open search menu"
+                aria-expanded={paletteOpen}
+                aria-haspopup="listbox"
                 onClick={() => {
-                  if (menuOpen) closeApplicationMenu();
-                  else openApplicationMenu(menuTrigger.current);
+                  if (paletteOpen) closePalette();
+                  else openPalette(paletteTrigger.current);
                 }}
               >
                 <Menu />
@@ -316,36 +405,27 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
                 ref={searchInput}
                 role="combobox"
                 aria-label="Search Beacon"
-                aria-autocomplete="list"
+                aria-autocomplete="both"
                 aria-controls={resultsId}
-                aria-expanded={searchOpen && Boolean(query.trim())}
-                aria-activedescendant={activeResultId}
-                autoFocus={path === '/'}
-                value={query}
+                aria-expanded={paletteOpen}
+                aria-activedescendant={activeItemId}
+                value={displayValue}
                 onFocus={() => {
-                  setMenuOpen(false);
                   setAccountOpen(false);
-                  if (query.trim()) setSearchOpen(true);
+                  setPaletteOpen(true);
                 }}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setQuery(value);
-                  setSearchOpen(Boolean(value.trim()));
-                  setActiveResult(-1);
-                  setMenuOpen(false);
-                  setAccountOpen(false);
-                }}
+                onChange={(event) => setQueryFromInput(event.target.value)}
                 onKeyDown={handleSearchKeyDown}
+                onPaste={handleSearchPaste}
                 placeholder="Find a redirect or destination…"
               />
-              {query && (
+              {displayValue && (
                 <button
                   className="icon-button"
                   aria-label="Clear search"
                   onClick={() => {
-                    setQuery('');
-                    setSearchOpen(false);
-                    searchInput.current?.focus();
+                    setQueryFromInput('');
+                    focusWithoutScrolling(searchInput.current);
                   }}
                 >
                   <X />
@@ -353,17 +433,20 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
               )}
             </div>
 
-            {menuOpen && (
-              <ApplicationMenu itemRefs={menuItems} onClose={() => closeApplicationMenu()} />
-            )}
-            {searchOpen && query.trim() && (
-              <SearchResults
+            {paletteOpen && (
+              <Palette
                 id={resultsId}
-                activeResult={activeResult}
+                hasQuery={hasQuery}
+                actions={paletteActions}
                 results={results}
                 status={searchStatus}
-                onActivate={openResult}
-                onHighlight={setActiveResult}
+                activeItem={activeItem}
+                onAction={activateAction}
+                onResult={openResult}
+                onHighlight={(index) => {
+                  if (hasQuery) previewResult(index);
+                  else setActiveItem(index);
+                }}
               />
             )}
           </div>
@@ -374,42 +457,72 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   );
 }
 
-function SearchResults({
+function Palette({
   id,
-  activeResult,
+  hasQuery,
+  actions,
   results,
   status,
-  onActivate,
+  activeItem,
+  onAction,
+  onResult,
   onHighlight,
 }: {
   id: string;
-  activeResult: number;
+  hasQuery: boolean;
+  actions: PaletteAction[];
   results: SearchResult[];
   status: SearchStatus;
-  onActivate(result: SearchResult): void;
+  activeItem: number;
+  onAction(action: PaletteAction): void;
+  onResult(result: SearchResult): void;
   onHighlight(index: number): void;
 }) {
   return (
-    <div className="search-results" id={id} role="listbox" aria-label="Search suggestions">
-      {status === 'loading' && <SearchMessage icon={<Search />} text="Searching…" />}
-      {status === 'error' && (
+    <div className="search-results" id={id} role="listbox" aria-label="Search menu">
+      {!hasQuery && (
+        <>
+          <p className="palette-label">Actions</p>
+          {actions.map((action, index) => (
+            <div key={action.id}>
+              {action.divider && <div className="menu-divider" />}
+              <button
+                id={`${id}-action-${index}`}
+                className={`result-row${activeItem === index ? ' active' : ''}`}
+                role="option"
+                aria-selected={activeItem === index}
+                onMouseEnter={() => onHighlight(index)}
+                onClick={() => onAction(action)}
+              >
+                <span className="result-icon">{action.icon}</span>
+                <span>
+                  <strong>{action.label}</strong>
+                  <small>{action.description}</small>
+                </span>
+                <ChevronRight />
+              </button>
+            </div>
+          ))}
+        </>
+      )}
+      {hasQuery && status === 'loading' && <SearchMessage icon={<Search />} text="Searching…" />}
+      {hasQuery && status === 'error' && (
         <SearchMessage icon={<Search />} text="Search is unavailable. Try again." />
       )}
-      {status === 'success' && !results.length && (
+      {hasQuery && status === 'success' && !results.length && (
         <SearchMessage icon={<Search />} text="No matching assets" />
       )}
-      {status === 'success' &&
+      {hasQuery &&
+        status === 'success' &&
         results.map((result, index) => (
           <button
             key={`${result.kind}:${result.id}`}
-            id={`${id}-${index}`}
-            className={`result-row${activeResult === index ? ' active' : ''}`}
+            id={`${id}-result-${index}`}
+            className={`result-row${activeItem === index ? ' active' : ''}`}
             role="option"
-            aria-selected={activeResult === index}
-            tabIndex={-1}
-            onMouseDown={(event) => event.preventDefault()}
+            aria-selected={activeItem === index}
             onMouseEnter={() => onHighlight(index)}
-            onClick={() => onActivate(result)}
+            onClick={() => onResult(result)}
           >
             <span className={`result-icon ${result.kind}`}>
               {result.kind === 'redirect' ? <Link2 /> : <Target />}
@@ -434,48 +547,46 @@ function SearchMessage({ icon, text }: { icon: ReactNode; text: string }) {
   );
 }
 
-function ApplicationMenu({
-  itemRefs,
-  onClose,
-}: {
-  itemRefs: { current: Array<HTMLAnchorElement | null> };
-  onClose(): void;
-}) {
-  const links = [
-    { label: 'Add redirect', to: '/redirects/new', icon: <CirclePlus />, shortcut: '⌘ N' },
-    { label: 'Add destination', to: '/destinations/new', icon: <Target /> },
-    { label: 'Reporting', to: '/reports', icon: <BarChart3 />, divider: true },
-    { label: 'Recent activity', to: '/activity', icon: <Activity /> },
-    { label: 'Settings', to: '/settings', icon: <Settings /> },
-  ];
-
-  return (
-    <div className="app-menu" role="menu">
-      <p className="menu-label">Create</p>
-      {links.map((link, index) => (
-        <div key={link.to} role="none">
-          {link.divider && <div className="menu-divider" />}
-          <Link
-            ref={(item) => {
-              itemRefs.current[index] = item;
-            }}
-            role="menuitem"
-            to={link.to}
-            onClick={onClose}
-          >
-            {link.icon} {link.label} <span>{link.shortcut}</span>
-          </Link>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function isTextEntry(target: HTMLElement | null) {
   return (
     target instanceof HTMLInputElement ||
     target instanceof HTMLTextAreaElement ||
     target instanceof HTMLSelectElement ||
     Boolean(target?.isContentEditable)
+  );
+}
+
+function isSlashShortcut(event: Pick<KeyboardEvent, 'key' | 'code'>) {
+  return event.key === '/' || (event.key === 'Unidentified' && event.code === 'Slash');
+}
+
+function isTypingKey(event: ReactKeyboardEvent<HTMLInputElement>) {
+  return event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey;
+}
+
+function focusWithoutScrolling(element: HTMLElement | null | undefined) {
+  if (!element) return;
+  try {
+    element.focus({ preventScroll: true });
+  } catch {
+    element.focus();
+  }
+}
+
+function parseSearchResults(value: unknown): SearchResult[] {
+  if (!Array.isArray(value) || !value.every(isSearchResult)) {
+    throw new Error('Search response was invalid');
+  }
+  return value;
+}
+
+function isSearchResult(value: unknown): value is SearchResult {
+  if (!value || typeof value !== 'object') return false;
+  const result = value as Record<string, unknown>;
+  return (
+    typeof result.id === 'string' &&
+    (result.kind === 'redirect' || result.kind === 'destination') &&
+    typeof result.title === 'string' &&
+    typeof result.subtitle === 'string'
   );
 }

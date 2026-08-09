@@ -7,7 +7,11 @@ const baseConfig = {
 
 export default function nextConfig(phase) {
   if (phase !== PHASE_DEVELOPMENT_SERVER) {
-    return { ...baseConfig, output: 'export' };
+    return {
+      ...baseConfig,
+      output: 'export',
+      experimental: { cpus: 1 },
+    };
   }
 
   return {
