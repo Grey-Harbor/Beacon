@@ -22,7 +22,6 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from 'react';
-import { flushSync } from 'react-dom';
 import { api, json } from './api';
 import { BrandMark } from './components';
 import { Link, useNavigate, usePath } from './router';
@@ -185,17 +184,14 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }
 
   function openApplicationMenu(returnFocus: HTMLElement | null) {
-    // Safari only accepts the programmatic focus reliably while the opening
-    // keyboard or pointer interaction is still being processed. Mount the
-    // menu and move focus in that same interaction rather than waiting for an
-    // effect after the browser has completed it.
-    flushSync(() => {
-      menuReturnFocus.current = returnFocus;
-      setSearchOpen(false);
-      setActiveResult(-1);
-      setAccountOpen(false);
-      setApplicationMenuOpen(true);
-    });
+    // Keep the menu in the DOM while it is closed, so Safari can focus its
+    // first item during the originating keyboard interaction. The closed menu
+    // is both visually and semantically hidden (see ApplicationMenu).
+    menuReturnFocus.current = returnFocus;
+    setSearchOpen(false);
+    setActiveResult(-1);
+    setAccountOpen(false);
+    setApplicationMenuOpen(true);
     focusWithoutScrolling(menuItems.current[0]);
   }
 
@@ -362,9 +358,11 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
               )}
             </div>
 
-            {menuOpen && (
-              <ApplicationMenu itemRefs={menuItems} onClose={() => closeApplicationMenu()} />
-            )}
+            <ApplicationMenu
+              open={menuOpen}
+              itemRefs={menuItems}
+              onClose={() => closeApplicationMenu()}
+            />
             {searchOpen && query.trim() && (
               <SearchResults
                 id={resultsId}
@@ -444,9 +442,11 @@ function SearchMessage({ icon, text }: { icon: ReactNode; text: string }) {
 }
 
 function ApplicationMenu({
+  open,
   itemRefs,
   onClose,
 }: {
+  open: boolean;
   itemRefs: { current: Array<HTMLButtonElement | null> };
   onClose(): void;
 }) {
@@ -460,7 +460,12 @@ function ApplicationMenu({
   ];
 
   return (
-    <div className="app-menu" role="menu">
+    <div
+      className="app-menu"
+      role="menu"
+      aria-hidden={!open}
+      data-open={open ? 'true' : undefined}
+    >
       <p className="menu-label">Create</p>
       {links.map((link, index) => (
         <div key={link.to} role="none">
