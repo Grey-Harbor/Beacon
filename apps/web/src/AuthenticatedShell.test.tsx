@@ -164,12 +164,12 @@ describe('AuthenticatedShell', () => {
     expect(screen.getByText('Workspace content')).toBeInTheDocument();
   });
 
-  it('opens the slash menu, roves focus, restores focus, and ignores editor fields', async () => {
+  it('opens the slash menu, roves focus, restores focus, and ignores editor fields', () => {
     renderShell(<input aria-label="Editor field" />);
     const trigger = screen.getByRole('button', { name: 'Open application menu' });
 
     fireEvent.keyDown(document, { key: '/' });
-    const firstItem = await screen.findByRole('menuitem', { name: /Add redirect/ });
+    const firstItem = screen.getByRole('menuitem', { name: /Add redirect/ });
     expect(firstItem).toHaveProperty('tagName', 'BUTTON');
     expect(firstItem).toHaveAttribute('tabindex', '-1');
     expect(firstItem).toHaveFocus();
@@ -184,6 +184,14 @@ describe('AuthenticatedShell', () => {
     fireEvent.keyDown(editor, { key: '/' });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(editor).toHaveValue('');
+  });
+
+  it('opens the menu from Safari’s physical slash-key fallback', () => {
+    renderShell();
+
+    fireEvent.keyDown(document, { key: 'Unidentified', code: 'Slash' });
+
+    expect(screen.getByRole('menuitem', { name: /Add redirect/ })).toHaveFocus();
   });
 
   it('handles menu arrows from page content across route changes', async () => {

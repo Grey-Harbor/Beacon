@@ -22,6 +22,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { api, json } from './api';
 import { BrandMark } from './components';
 import { Link, useNavigate, usePath } from './router';
@@ -112,7 +113,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   useEffect(() => {
     function handleApplicationKeyDown(event: KeyboardEvent) {
       if (
-        event.key === '/' &&
+        isSlashShortcut(event) &&
         !event.defaultPrevented &&
         !event.metaKey &&
         !event.ctrlKey &&
@@ -160,16 +161,12 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
               : current < 0
                 ? items.length - 1
                 : (current - 1 + items.length) % items.length;
-      items[next]?.focus();
+      focusWithoutScrolling(items[next]);
     }
 
     document.addEventListener('keydown', handleApplicationKeyDown, true);
     return () => document.removeEventListener('keydown', handleApplicationKeyDown, true);
   }, []);
-
-  useLayoutEffect(() => {
-    if (menuOpen) menuItems.current[0]?.focus({ preventScroll: true });
-  }, [menuOpen]);
 
   useEffect(() => {
     if (accountOpen) window.requestAnimationFrame(() => accountItem.current?.focus());
@@ -188,17 +185,24 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }
 
   function openApplicationMenu(returnFocus: HTMLElement | null) {
-    menuReturnFocus.current = returnFocus;
-    setSearchOpen(false);
-    setActiveResult(-1);
-    setAccountOpen(false);
-    setApplicationMenuOpen(true);
+    // Safari only accepts the programmatic focus reliably while the opening
+    // keyboard or pointer interaction is still being processed. Mount the
+    // menu and move focus in that same interaction rather than waiting for an
+    // effect after the browser has completed it.
+    flushSync(() => {
+      menuReturnFocus.current = returnFocus;
+      setSearchOpen(false);
+      setActiveResult(-1);
+      setAccountOpen(false);
+      setApplicationMenuOpen(true);
+    });
+    focusWithoutScrolling(menuItems.current[0]);
   }
 
   function closeApplicationMenu(restoreFocus = false) {
     setApplicationMenuOpen(false);
     if (restoreFocus) {
-      (menuReturnFocus.current ?? menuTrigger.current)?.focus({ preventScroll: true });
+      focusWithoutScrolling(menuReturnFocus.current ?? menuTrigger.current);
     }
   }
 
@@ -488,6 +492,21 @@ function isTextEntry(target: HTMLElement | null) {
     target instanceof HTMLSelectElement ||
     Boolean(target?.isContentEditable)
   );
+}
+
+function isSlashShortcut(event: KeyboardEvent) {
+  return event.key === '/' || (event.key === 'Unidentified' && event.code === 'Slash');
+}
+
+function focusWithoutScrolling(element: HTMLElement | null | undefined) {
+  if (!element) return;
+  try {
+    element.focus({ preventScroll: true });
+  } catch {
+    // Older Safari releases do not support focus options, but still support
+    // programmatic focus without them.
+    element.focus();
+  }
 }
 
 function parseSearchResults(value: unknown): SearchResult[] {
