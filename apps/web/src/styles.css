@@ -466,49 +466,8 @@ a:focus-visible {
 .search-message svg {
   width: 19px;
 }
-.app-menu {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 8px);
-  z-index: 35;
-  width: 264px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  background: white;
-  box-shadow: 0 20px 50px rgba(38, 50, 43, 0.16);
-}
-.app-menu a,
-.app-menu button {
-  min-height: 42px;
-  width: 100%;
-  padding: 0 10px;
-  display: grid;
-  grid-template-columns: 24px 1fr auto;
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-size: 14px;
-}
-.app-menu a:hover,
-.app-menu a:focus-visible,
-.app-menu button:hover,
-.app-menu button:focus-visible {
-  background: var(--soft);
-  outline: 0;
-}
-.app-menu svg {
-  width: 17px;
-}
-.app-menu span {
-  color: #9aa29b;
-}
-.menu-label {
-  padding: 7px 10px 4px;
+.palette-label {
+  padding: 7px 10px 5px;
   margin: 0;
   color: var(--muted);
   font-size: 11px;
@@ -957,9 +916,6 @@ tbody tr:last-child td {
   }
   .search-row input {
     font-size: 14px;
-  }
-  .app-menu {
-    width: min(264px, calc(100vw - 24px));
   }
 }
 
