@@ -264,10 +264,7 @@ describe('AuthenticatedShell', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
     await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/session',
-      expect.objectContaining({ method: 'DELETE' }),
-    );
+    expect(fetch).toHaveBeenCalledWith('/api/v1/session', { method: 'DELETE' });
   });
 
   it('resets an open search when another route is announced', async () => {
