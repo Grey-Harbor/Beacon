@@ -627,6 +627,7 @@ a:focus-visible {
 }
 .field-grid {
   display: grid;
+  align-items: start;
   gap: 18px;
 }
 .field-grid.two {
