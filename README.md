@@ -6,6 +6,8 @@ Beacon is a focused redirect-management application for teams that want link ope
 
 It gives operators a calm, search-first place to create redirects, reuse destinations, review activity, and understand runtime events—while [Drift][drift] keeps authoritative state and [Compactor][compactor] serves redirect traffic.
 
+Visit the [Beacon project site](https://beacon.greyharborsoftware.com) for a concise public overview.
+
 ## Start here
 
 - [Getting started tutorial](./docs/tutorial/getting-started.md) — connect a Drift tenant, run Beacon locally, and create your first redirect.
