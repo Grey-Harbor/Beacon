@@ -478,10 +478,6 @@ a:focus-visible {
   background: white;
   box-shadow: 0 20px 50px rgba(38, 50, 43, 0.16);
 }
-.app-menu:not([data-open]) {
-  opacity: 0;
-  pointer-events: none;
-}
 .app-menu a,
 .app-menu button {
   min-height: 42px;

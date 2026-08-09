@@ -168,7 +168,7 @@ describe('AuthenticatedShell', () => {
     renderShell(<input aria-label="Editor field" />);
     const trigger = screen.getByRole('button', { name: 'Open application menu' });
 
-    fireEvent.keyDown(document, { key: '/' });
+    fireEvent.keyDown(trigger, { key: '/' });
     const firstItem = screen.getByRole('menuitem', { name: /Add redirect/ });
     expect(firstItem).toHaveProperty('tagName', 'BUTTON');
     expect(firstItem).toHaveAttribute('tabindex', '-1');
@@ -189,7 +189,10 @@ describe('AuthenticatedShell', () => {
   it('opens the menu from Safari’s physical slash-key fallback', () => {
     renderShell();
 
-    fireEvent.keyDown(document, { key: 'Unidentified', code: 'Slash' });
+    fireEvent.keyDown(screen.getByText('Workspace content'), {
+      key: 'Unidentified',
+      code: 'Slash',
+    });
 
     expect(screen.getByRole('menuitem', { name: /Add redirect/ })).toHaveFocus();
   });

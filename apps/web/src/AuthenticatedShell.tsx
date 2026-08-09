@@ -109,63 +109,62 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
     return () => document.removeEventListener('pointerdown', closeOnOutsideClick);
   }, []);
 
-  useEffect(() => {
-    function handleApplicationKeyDown(event: KeyboardEvent) {
-      if (
-        isSlashShortcut(event) &&
-        !event.defaultPrevented &&
-        !event.metaKey &&
-        !event.ctrlKey &&
-        !event.altKey
-      ) {
-        const target = event.target instanceof HTMLElement ? event.target : null;
-        if (isTextEntry(target) && target !== searchInput.current) return;
-        event.preventDefault();
-        event.stopPropagation();
-        openApplicationMenu(target ?? menuTrigger.current);
-        return;
-      }
-      if (!menuOpenRef.current) return;
-      const items = menuItems.current.filter((item): item is HTMLButtonElement => Boolean(item));
-      const current = items.indexOf(document.activeElement as HTMLButtonElement);
-      if (event.key === 'Tab') {
-        setApplicationMenuOpen(false);
-        return;
-      }
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        closeApplicationMenu(true);
-        return;
-      }
-      if ((event.key === 'Enter' || event.key === ' ') && current >= 0) {
-        event.preventDefault();
-        event.stopPropagation();
-        items[current]?.click();
-        return;
-      }
-      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+  function handleApplicationKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
+    if (
+      isSlashShortcut(event) &&
+      !event.defaultPrevented &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey
+    ) {
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      if (isTextEntry(target) && target !== searchInput.current) return;
       event.preventDefault();
       event.stopPropagation();
-      if (!items.length) return;
-      const next =
-        event.key === 'Home'
-          ? 0
-          : event.key === 'End'
-            ? items.length - 1
-            : event.key === 'ArrowDown'
-              ? current < 0
-                ? 0
-                : (current + 1) % items.length
-              : current < 0
-                ? items.length - 1
-                : (current - 1 + items.length) % items.length;
-      focusWithoutScrolling(items[next]);
+      openApplicationMenu(target ?? menuTrigger.current);
+      return;
     }
+    if (!menuOpenRef.current) return;
+    const items = menuItems.current.filter((item): item is HTMLButtonElement => Boolean(item));
+    const current = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (event.key === 'Tab') {
+      setApplicationMenuOpen(false);
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeApplicationMenu(true);
+      return;
+    }
+    if ((event.key === 'Enter' || event.key === ' ') && current >= 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      items[current]?.click();
+      return;
+    }
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (!items.length) return;
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? items.length - 1
+          : event.key === 'ArrowDown'
+            ? current < 0
+              ? 0
+              : (current + 1) % items.length
+            : current < 0
+              ? items.length - 1
+              : (current - 1 + items.length) % items.length;
+    focusWithoutScrolling(items[next]);
+  }
 
-    document.addEventListener('keydown', handleApplicationKeyDown, true);
-    return () => document.removeEventListener('keydown', handleApplicationKeyDown, true);
-  }, []);
+  useLayoutEffect(() => {
+    if (menuOpen) focusWithoutScrolling(menuItems.current[0]);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (accountOpen) window.requestAnimationFrame(() => accountItem.current?.focus());
@@ -184,15 +183,11 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   }
 
   function openApplicationMenu(returnFocus: HTMLElement | null) {
-    // Keep the menu in the DOM while it is closed, so Safari can focus its
-    // first item during the originating keyboard interaction. The closed menu
-    // is both visually and semantically hidden (see ApplicationMenu).
     menuReturnFocus.current = returnFocus;
     setSearchOpen(false);
     setActiveResult(-1);
     setAccountOpen(false);
     setApplicationMenuOpen(true);
-    focusWithoutScrolling(menuItems.current[0]);
   }
 
   function closeApplicationMenu(restoreFocus = false) {
@@ -261,7 +256,7 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
   const activeResultId = activeResult >= 0 ? `${resultsId}-${activeResult}` : undefined;
 
   return (
-    <div className="authenticated-shell">
+    <div className="authenticated-shell" onKeyDownCapture={handleApplicationKeyDown}>
       <header className="global-navigation" ref={shellNavigation}>
         <div className="navigation-primary-row">
           <Link className="brand-home-link" to="/" aria-label="Beacon home">
@@ -358,11 +353,9 @@ export function AuthenticatedShell({ session, onLogout, children }: Authenticate
               )}
             </div>
 
-            <ApplicationMenu
-              open={menuOpen}
-              itemRefs={menuItems}
-              onClose={() => closeApplicationMenu()}
-            />
+            {menuOpen && (
+              <ApplicationMenu itemRefs={menuItems} onClose={() => closeApplicationMenu()} />
+            )}
             {searchOpen && query.trim() && (
               <SearchResults
                 id={resultsId}
@@ -442,11 +435,9 @@ function SearchMessage({ icon, text }: { icon: ReactNode; text: string }) {
 }
 
 function ApplicationMenu({
-  open,
   itemRefs,
   onClose,
 }: {
-  open: boolean;
   itemRefs: { current: Array<HTMLButtonElement | null> };
   onClose(): void;
 }) {
@@ -460,12 +451,7 @@ function ApplicationMenu({
   ];
 
   return (
-    <div
-      className="app-menu"
-      role="menu"
-      aria-hidden={!open}
-      data-open={open ? 'true' : undefined}
-    >
+    <div className="app-menu" role="menu">
       <p className="menu-label">Create</p>
       {links.map((link, index) => (
         <div key={link.to} role="none">
@@ -499,7 +485,7 @@ function isTextEntry(target: HTMLElement | null) {
   );
 }
 
-function isSlashShortcut(event: KeyboardEvent) {
+function isSlashShortcut(event: Pick<KeyboardEvent, 'key' | 'code'>) {
   return event.key === '/' || (event.key === 'Unidentified' && event.code === 'Slash');
 }
 
