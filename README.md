@@ -40,5 +40,9 @@ Beacon is not a redirect runtime, hosted link platform, billing-grade analytics 
 
 Use [the documentation index](./docs/README.md) when you need a tutorial, focused operating procedure, exact reference, or architectural explanation.
 
+## License
+
+Beacon is licensed under the [Apache License, Version 2.0](./LICENSE).
+
 [compactor]: https://compactor.greyharborsoftware.com
 [drift]: https://drift.greyharborsoftware.com

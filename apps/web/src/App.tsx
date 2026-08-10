@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AuthenticatedShell } from './AuthenticatedShell';
 import { api } from './api';
-import { Loading } from './components';
+import { ApplicationFooter, Loading } from './components';
 import { ActivityPage } from './screens/ActivityScreen';
 import { LoginPage, SetupPage } from './screens/AuthScreens';
 import { DestinationEditorPage } from './screens/DestinationEditorScreen';
@@ -32,28 +32,37 @@ export function App() {
 
   useEffect(() => void refreshSession(), []);
 
-  if (!ready) return <Loading />;
-  if (!configured) return <SetupPage onComplete={refreshSession} />;
-  if (!session.authenticated) return <LoginPage onComplete={refreshSession} />;
+  let content;
+  if (!ready) content = <Loading />;
+  else if (!configured) content = <SetupPage onComplete={refreshSession} />;
+  else if (!session.authenticated) content = <LoginPage onComplete={refreshSession} />;
+  else {
+    let page;
+    if (path === '/redirects/new' || /^\/redirects\/[^/]+\/edit$/.test(path)) {
+      page = <RedirectEditorPage />;
+    } else if (path === '/destinations/new' || /^\/destinations\/[^/]+\/edit$/.test(path)) {
+      page = <DestinationEditorPage />;
+    } else if (path === '/activity') {
+      page = <ActivityPage />;
+    } else if (path === '/reports') {
+      page = <ReportsPage />;
+    } else if (path === '/settings') {
+      page = <SettingsPage />;
+    } else {
+      page = <HomePage />;
+    }
 
-  let page;
-  if (path === '/redirects/new' || /^\/redirects\/[^/]+\/edit$/.test(path)) {
-    page = <RedirectEditorPage />;
-  } else if (path === '/destinations/new' || /^\/destinations\/[^/]+\/edit$/.test(path)) {
-    page = <DestinationEditorPage />;
-  } else if (path === '/activity') {
-    page = <ActivityPage />;
-  } else if (path === '/reports') {
-    page = <ReportsPage />;
-  } else if (path === '/settings') {
-    page = <SettingsPage />;
-  } else {
-    page = <HomePage />;
+    content = (
+      <AuthenticatedShell session={session} onLogout={refreshSession}>
+        {page}
+      </AuthenticatedShell>
+    );
   }
 
   return (
-    <AuthenticatedShell session={session} onLogout={refreshSession}>
-      {page}
-    </AuthenticatedShell>
+    <div className="application-frame">
+      <div className="application-content">{content}</div>
+      <ApplicationFooter />
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { AuthenticatedShell } from './AuthenticatedShell';
-import { ProjectLink } from './components';
+import { ApplicationFooter, ProjectLink } from './components';
 
 const session = { authenticated: true, user: { username: 'harbor-admin' } };
 
@@ -70,6 +70,17 @@ describe('AuthenticatedShell', () => {
       'href',
       'https://compactor.greyharborsoftware.com',
     );
+  });
+
+  it('links the application footer to Grey Harbor and the Apache-2.0 license', () => {
+    render(<ApplicationFooter />);
+
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'By Grey Harbor' })).toHaveAttribute(
+      'href',
+      'https://www.greyharborsoftware.com',
+    );
+    expect(screen.getByRole('link', { name: 'Apache-2.0' })).toHaveAttribute('href', '/LICENSE');
   });
 
   it('opens actions from the search menu and activates them from the input', async () => {
@@ -305,5 +316,6 @@ describe('App authentication scope', () => {
     render(<App />);
     expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Beacon home' })).not.toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 });
