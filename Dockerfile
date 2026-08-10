@@ -6,6 +6,7 @@ COPY packages/server/package.json packages/server/package.json
 COPY packages/shared/package.json packages/shared/package.json
 RUN npm ci
 COPY tsconfig.base.json .prettierrc.json ./
+COPY LICENSE ./LICENSE
 COPY scripts/build.mjs ./scripts/build.mjs
 COPY apps ./apps
 COPY packages ./packages
@@ -20,6 +21,7 @@ COPY packages/server/package.json packages/server/package.json
 COPY packages/shared/package.json packages/shared/package.json
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build --chown=node:node /app/apps/web/out ./apps/web/out
+COPY --from=build --chown=node:node /app/LICENSE ./apps/web/out/LICENSE
 COPY --from=build --chown=node:node /app/packages/server/dist ./packages/server/dist
 COPY --from=build --chown=node:node /app/packages/shared/dist ./packages/shared/dist
 RUN mkdir -p /data && chown node:node /data

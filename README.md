@@ -19,7 +19,7 @@ Visit the [Beacon project site](https://beacon.greyharborsoftware.com) for a con
 
 ## Run the complete stack
 
-Beacon includes a Compose topology that builds the management application and connects pinned Drift and Compactor releases. Follow the [self-hosting guide](./docs/how-to/self-hosting.md) to generate independent credentials, bootstrap the Drift tenant, start the services, and place the management interface behind HTTPS.
+Beacon includes a Compose topology that builds the management application and tracks the latest Drift and Compactor images. Follow the [self-hosting guide](./docs/how-to/self-hosting.md) to generate independent credentials, bootstrap the Drift tenant, update the services, and place the management interface behind HTTPS.
 
 ## Why it exists
 
@@ -39,6 +39,10 @@ Beacon keeps that work explicit:
 Beacon is not a redirect runtime, hosted link platform, billing-grade analytics system, identity provider, or general-purpose administration console. v0.1.0 deliberately supports one Drift tenant, one administrator, and one Beacon replica. Redirect changes can take up to the configured 30-second Compactor cache window to propagate.
 
 Use [the documentation index](./docs/README.md) when you need a tutorial, focused operating procedure, exact reference, or architectural explanation.
+
+## License
+
+Beacon is licensed under the [Apache License, Version 2.0](./LICENSE).
 
 [compactor]: https://compactor.greyharborsoftware.com
 [drift]: https://drift.greyharborsoftware.com

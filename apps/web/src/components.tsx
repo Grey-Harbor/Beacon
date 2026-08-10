@@ -30,6 +30,16 @@ export function Loading() {
   );
 }
 
+export function ApplicationFooter() {
+  return (
+    <footer className="application-footer">
+      <a href="https://www.greyharborsoftware.com">By Grey Harbor</a>
+      <span aria-hidden="true">·</span>
+      <a href="/LICENSE">Apache-2.0</a>
+    </footer>
+  );
+}
+
 export function AuthShell({
   eyebrow,
   title,

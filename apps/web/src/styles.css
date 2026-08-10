@@ -22,6 +22,55 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+.application-frame {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.application-content {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.application-content > .centered-page,
+.application-content > .auth-page,
+.application-content > .authenticated-shell {
+  min-height: 0;
+  flex: 1;
+}
+.authenticated-shell {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.authenticated-shell > .workspace-page,
+.authenticated-shell > .home-shell {
+  min-height: 0;
+  flex: 1;
+}
+.application-footer {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 12px;
+}
+.application-footer a {
+  border-radius: 4px;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+.application-footer a:hover {
+  color: var(--accent-dark);
+}
 button,
 input,
 select,

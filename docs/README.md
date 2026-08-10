@@ -29,3 +29,7 @@ Use explanations to understand why Beacon has its boundaries and tradeoffs befor
 ## Release information
 
 Use [the current release description](../RELEASE.md) when preparing an annotated v0.1.0 tag or assessing release-facing behavior and known limits.
+
+## License
+
+Beacon is available under the [Apache License, Version 2.0](../LICENSE).

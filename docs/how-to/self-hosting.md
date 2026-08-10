@@ -11,7 +11,7 @@ cd /path/to/beacon
 cp .env.example .env
 ```
 
-Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Set `BEACON_BROWSER_ORIGIN` to the exact public HTTPS origin of the management UI, such as `https://beacon.example.com`; do not use the internal container address or add a path. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
+Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Set `BEACON_BROWSER_ORIGIN` to the exact public HTTPS origin of the management UI, such as `https://beacon.example.com`; do not use the internal container address or add a path. An explicit `http://localhost:3100` origin is suitable only for local use and deliberately produces a non-`Secure` session cookie. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
 
 Use [the environment-variable reference](../reference/environment.md) for every value, validation constraint, default, and rotation effect.
 
@@ -27,14 +27,15 @@ docker compose exec drift node dist/cli.js bootstrap --slug beacon --name Beacon
 Save the returned key as `DRIFT_API_KEY` in `.env`, then build and start the remaining services:
 
 ```sh
+docker compose pull drift compactor
 docker compose up --build -d
 docker compose ps
 curl --fail http://127.0.0.1:3100/health
 ```
 
-**Guaranteed:** the bundled Compose configuration runs Drift and Compactor. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
+**Guaranteed:** the bundled Compose configuration runs Drift and Compactor using their `latest` image tags. `docker compose pull drift compactor` resolves the image versions before the stack starts. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
 
-**Recommended:** terminate HTTPS and authenticated operator access before exposing Beacon's management UI. Keep Drift private and expose Compactor, not Beacon, to redirect traffic. Configure proxy trust explicitly; Beacon does not infer it.
+**Recommended:** terminate HTTPS and authenticated operator access before exposing Beacon's management UI. Keep Drift private and expose Compactor, not Beacon, to redirect traffic. Configure proxy trust explicitly; Beacon does not infer it. Approve image updates before pulling; use a tested specific image tag when you need a repeatable rollback point.
 
 ## Configure and rotate secrets
 
