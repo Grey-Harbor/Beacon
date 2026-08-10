@@ -45,7 +45,8 @@ body {
   display: flex;
   flex-direction: column;
 }
-.authenticated-shell > .workspace-page {
+.authenticated-shell > .workspace-page,
+.authenticated-shell > .home-shell {
   min-height: 0;
   flex: 1;
 }
