@@ -27,14 +27,15 @@ docker compose exec drift node dist/cli.js bootstrap --slug beacon --name Beacon
 Save the returned key as `DRIFT_API_KEY` in `.env`, then build and start the remaining services:
 
 ```sh
+docker compose pull drift compactor
 docker compose up --build -d
 docker compose ps
 curl --fail http://127.0.0.1:3100/health
 ```
 
-**Guaranteed:** the bundled Compose configuration runs Drift and Compactor. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
+**Guaranteed:** the bundled Compose configuration runs Drift and Compactor using their `latest` image tags. `docker compose pull drift compactor` resolves the image versions before the stack starts. Beacon is bound to `127.0.0.1:3100`; Compactor listens publicly on port `8080`; Compactor uses `COMPACTOR_REDIRECT_CACHE_TTL_SECONDS=30`.
 
-**Recommended:** terminate HTTPS and authenticated operator access before exposing Beacon's management UI. Keep Drift private and expose Compactor, not Beacon, to redirect traffic. Configure proxy trust explicitly; Beacon does not infer it.
+**Recommended:** terminate HTTPS and authenticated operator access before exposing Beacon's management UI. Keep Drift private and expose Compactor, not Beacon, to redirect traffic. Configure proxy trust explicitly; Beacon does not infer it. Approve image updates before pulling; use a tested specific image tag when you need a repeatable rollback point.
 
 ## Configure and rotate secrets
 

@@ -19,7 +19,7 @@ Visit the [Beacon project site](https://beacon.greyharborsoftware.com) for a con
 
 ## Run the complete stack
 
-Beacon includes a Compose topology that builds the management application and connects pinned Drift and Compactor releases. Follow the [self-hosting guide](./docs/how-to/self-hosting.md) to generate independent credentials, bootstrap the Drift tenant, start the services, and place the management interface behind HTTPS.
+Beacon includes a Compose topology that builds the management application and tracks the latest Drift and Compactor images. Follow the [self-hosting guide](./docs/how-to/self-hosting.md) to generate independent credentials, bootstrap the Drift tenant, update the services, and place the management interface behind HTTPS.
 
 ## Why it exists
 
