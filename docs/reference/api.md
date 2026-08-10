@@ -41,7 +41,7 @@ Use these routes for the single-administrator bootstrap and browser session life
 | `GET`    | `/api/v1/session`      | Optional            | Returns `{ "authenticated", "user" }`; `user` is `null` or `{ "username" }` | Global rate limit   |
 | `DELETE` | `/api/v1/session`      | None                | Clears cookie and returns `{ "ok": true }`                                  | Global rate limit   |
 
-Session cookies are path-wide, HTTP-only, strict same-site, expire after 12 hours, and are `Secure` when `NODE_ENV=production`. Session records are not stored durably; changing `BEACON_SESSION_SECRET` invalidates all existing sessions.
+Session cookies are path-wide, HTTP-only, strict same-site, and expire after 12 hours. When `BEACON_BROWSER_ORIGIN` is configured, its scheme controls the `Secure` flag: HTTPS uses `Secure`, while an explicit HTTP origin supports local development. Without that setting, production uses `Secure`. Session records are not stored durably; changing `BEACON_SESSION_SECRET` invalidates all existing sessions.
 
 ## Redirect and destination management
 

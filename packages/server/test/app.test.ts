@@ -231,6 +231,39 @@ test('first-run setup closes and creates an authenticated session', async () => 
   projections.close();
 });
 
+test('uses the configured browser origin to secure session cookies', async () => {
+  async function sessionCookie(origin: string | undefined) {
+    const projections = new ProjectionStore(':memory:');
+    const app = await createApp(
+      { ...config, NODE_ENV: 'production', BEACON_BROWSER_ORIGIN: origin },
+      new BeaconService(new MemoryDrift(), projections),
+      projections,
+    );
+    await app.inject({
+      method: 'POST',
+      url: '/api/v1/setup',
+      payload: {
+        setupToken: config.BEACON_SETUP_TOKEN,
+        username: 'operator',
+        password: 'a-calm-password-123',
+      },
+    });
+    const login = await app.inject({
+      method: 'POST',
+      url: '/api/v1/session',
+      payload: { username: 'operator', password: 'a-calm-password-123' },
+    });
+    const cookie = String(login.headers['set-cookie']);
+    await app.close();
+    projections.close();
+    return cookie;
+  }
+
+  assert.doesNotMatch(await sessionCookie('http://localhost:3100'), /; Secure/i);
+  assert.match(await sessionCookie('https://beacon.example.com'), /; Secure/i);
+  assert.match(await sessionCookie(undefined), /; Secure/i);
+});
+
 test('configured browser origin permits the local development proxy only', async () => {
   const projections = new ProjectionStore(':memory:');
   const app = await createApp(

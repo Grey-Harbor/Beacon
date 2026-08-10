@@ -25,6 +25,9 @@ export async function createApp(
 ) {
   const app = Fastify({ logger: true, bodyLimit: 256 * 1024 });
   const sessions = new SessionCodec(config.BEACON_SESSION_SECRET);
+  const secureSessionCookie = config.BEACON_BROWSER_ORIGIN
+    ? new URL(config.BEACON_BROWSER_ORIGIN).protocol === 'https:'
+    : config.NODE_ENV === 'production';
   await app.register(cookie);
   await app.register(rateLimit, { global: true, max: 180, timeWindow: '1 minute' });
 
@@ -114,7 +117,7 @@ export async function createApp(
         path: '/',
         httpOnly: true,
         sameSite: 'strict',
-        secure: config.NODE_ENV === 'production',
+        secure: secureSessionCookie,
         maxAge: 12 * 60 * 60,
       });
       return admin;
