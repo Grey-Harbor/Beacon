@@ -26,7 +26,7 @@ All application errors use this shape. Validation errors additionally include an
 | `403`  | Invalid setup token or disallowed request origin                                                        | Use the deployment token or same-origin browser request                              |
 | `404`  | Resource is absent, archived, disabled for resolution, or route is unknown                              | Do not use a projection result as proof that a redirect exists                       |
 | `409`  | Setup is closed/in progress, a redirect conflicts, a destination is in use, or a Drift version is stale | Reload current state and make an explicit next change                                |
-| `502`  | Drift graph state is malformed                                                                          | Repair the authoritative data before retrying                                        |
+| `502`  | Drift is unavailable, returns an invalid response, or graph state is malformed                          | Restore Drift connectivity or repair the authoritative data before retrying          |
 | `500`  | Unexpected server or Drift failure                                                                      | Treat the result as indeterminate; do not assume a projection reflects durable state |
 
 ## Identity and session routes
@@ -41,7 +41,7 @@ Use these routes for the single-administrator bootstrap and browser session life
 | `GET`    | `/api/v1/session`      | Optional            | Returns `{ "authenticated", "user" }`; `user` is `null` or `{ "username" }` | Global rate limit   |
 | `DELETE` | `/api/v1/session`      | None                | Clears cookie and returns `{ "ok": true }`                                  | Global rate limit   |
 
-Session cookies are path-wide, HTTP-only, strict same-site, and expire after 12 hours. When `BEACON_BROWSER_ORIGIN` is configured, its scheme controls the `Secure` flag: HTTPS uses `Secure`, while an explicit HTTP origin supports local development. Without that setting, production uses `Secure`. Session records are not stored durably; changing `BEACON_SESSION_SECRET` invalidates all existing sessions.
+Session cookies are path-wide, HTTP-only, strict same-site, and expire after 12 hours. Production uses `Secure` cookies except when `BEACON_BROWSER_ORIGIN` is an explicit loopback HTTP origin (`localhost`, `127.0.0.1`, or `::1`) for local development. A public HTTP origin does not disable `Secure`. Session records are not stored durably; changing `BEACON_SESSION_SECRET` invalidates all existing sessions.
 
 ## Redirect and destination management
 

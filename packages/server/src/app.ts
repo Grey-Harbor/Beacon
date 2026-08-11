@@ -25,9 +25,8 @@ export async function createApp(
 ) {
   const app = Fastify({ logger: true, bodyLimit: 256 * 1024 });
   const sessions = new SessionCodec(config.BEACON_SESSION_SECRET);
-  const secureSessionCookie = config.BEACON_BROWSER_ORIGIN
-    ? new URL(config.BEACON_BROWSER_ORIGIN).protocol === 'https:'
-    : config.NODE_ENV === 'production';
+  const secureSessionCookie =
+    config.NODE_ENV === 'production' && !isLoopbackHttpOrigin(config.BEACON_BROWSER_ORIGIN);
   await app.register(cookie);
   await app.register(rateLimit, { global: true, max: 180, timeWindow: '1 minute' });
 
@@ -243,4 +242,13 @@ export async function createApp(
   }
 
   return app;
+}
+
+function isLoopbackHttpOrigin(origin: string | undefined) {
+  if (!origin) return false;
+  const parsed = new URL(origin);
+  return (
+    parsed.protocol === 'http:' &&
+    ['localhost', '127.0.0.1', '::1', '[::1]'].includes(parsed.hostname)
+  );
 }
