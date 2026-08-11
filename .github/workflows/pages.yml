@@ -1,21 +1,99 @@
-name: Publish website
+name: Publish release
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  verify-release-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+      - name: Verify the tag, release metadata, and main commit
+        shell: bash
+        run: |
+          [[ "$GITHUB_REF_TYPE" == "tag" ]]
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          tagged_commit="$(git rev-parse "${GITHUB_SHA}^{}")"
+          main_commit="$(git rev-parse origin/main)"
+          test "$tagged_commit" = "$main_commit"
+          expected_version="${GITHUB_REF_NAME#v}"
+          node - "$expected_version" <<'NODE'
+          const { readFileSync } = require('node:fs');
+
+          const expectedVersion = process.argv[2];
+          const packageFiles = [
+            'package.json',
+            'apps/web/package.json',
+            'packages/server/package.json',
+            'packages/shared/package.json',
+            'site/package.json',
+          ];
+          for (const file of packageFiles) {
+            const { version } = JSON.parse(readFileSync(file, 'utf8'));
+            if (version !== expectedVersion) {
+              throw new Error(`${file} declares ${version}, expected ${expectedVersion}`);
+            }
+          }
+
+          const lockEntries = [
+            ['package-lock.json', ''],
+            ['package-lock.json', 'apps/web'],
+            ['package-lock.json', 'packages/server'],
+            ['package-lock.json', 'packages/shared'],
+            ['site/package-lock.json', ''],
+          ];
+          for (const [file, entry] of lockEntries) {
+            const lock = JSON.parse(readFileSync(file, 'utf8'));
+            const version = lock.packages?.[entry]?.version;
+            if (version !== expectedVersion) {
+              const name = entry || '<root>';
+              throw new Error(`${file} ${name} declares ${version}, expected ${expectedVersion}`);
+            }
+          }
+          NODE
+          grep -Fx "# Beacon v${expected_version}" RELEASE.md
+
+  package:
+    needs: verify-release-tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/grey-harbor/beacon:${{ github.ref_name }}
+            ghcr.io/grey-harbor/beacon:latest
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+
   build:
+    needs: verify-release-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -39,6 +117,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -11,7 +11,7 @@ cd /path/to/beacon
 cp .env.example .env
 ```
 
-Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Set `BEACON_BROWSER_ORIGIN` to the exact public HTTPS origin of the management UI, such as `https://beacon.example.com`; do not use the internal container address or add a path. An explicit `http://localhost:3100` origin is suitable only for local use and deliberately produces a non-`Secure` session cookie. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
+Set `BEACON_SESSION_SECRET` to at least 32 random characters. Set independent, high-entropy `BEACON_SETUP_TOKEN`, `BEACON_SOURCE_TOKEN`, and `BEACON_EVENT_TOKEN` values. Set `BEACON_BROWSER_ORIGIN` to the exact public HTTPS origin of the management UI, such as `https://beacon.example.com`; do not use the internal container address or add a path. An explicit loopback origin such as `http://localhost:3100` is suitable only for local use and deliberately produces a non-`Secure` session cookie; a public HTTP origin does not. Do not put those secrets, a Drift tenant key, or deployment `.env` files in version control.
 
 Use [the environment-variable reference](../reference/environment.md) for every value, validation constraint, default, and rotation effect.
 
@@ -49,7 +49,15 @@ To rotate any value, update the deployment configuration and restart the affecte
 
 After restoring Drift, start Beacon, sign in, and use **Settings → Rebuild**. The rebuild rereads current Drift records and reconstructs search, resolution, activity, and reporting rows. It does not restore deleted records, recreate events that Compactor failed to deliver, or provide a restore UI.
 
-To roll back a Beacon release, deploy a prior compatible Beacon image with the same Drift tenant and Beacon volume, verify `/health`, then rebuild projections if their status is stale. Do not roll back Drift data just to match a Beacon image without a tested Drift recovery plan.
+To roll back Beacon, check out a tested prior Beacon revision with its compatible Compose configuration, then rebuild only Beacon:
+
+```sh
+git switch --detach <tested-beacon-revision>
+docker compose up --build -d beacon
+curl --fail http://127.0.0.1:3100/health
+```
+
+Rebuild projections if their status is stale. The bundled Compose file tracks external images as `latest`, so a repeatable rollback also requires the operator to select tested Drift and Compactor tags before starting the stack. Do not roll back Drift data just to match a Beacon revision without a tested Drift recovery plan.
 
 ## Monitor and operate the deployment
 

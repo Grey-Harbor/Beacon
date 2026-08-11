@@ -260,6 +260,7 @@ test('uses the configured browser origin to secure session cookies', async () =>
   }
 
   assert.doesNotMatch(await sessionCookie('http://localhost:3100'), /; Secure/i);
+  assert.match(await sessionCookie('http://beacon.example.com'), /; Secure/i);
   assert.match(await sessionCookie('https://beacon.example.com'), /; Secure/i);
   assert.match(await sessionCookie(undefined), /; Secure/i);
 });

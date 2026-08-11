@@ -1,6 +1,6 @@
 # Beacon v0.1.0
 
-Use this page when preparing the annotated `v0.1.0` release tag or assessing the current release's supported behavior and limits. It is the canonical release summary; use [the documentation index](./docs/README.md) for operational instructions and exact contracts.
+Use this page when preparing the annotated `v0.1.0` release tag or assessing the current release's supported behavior and limits. The public website and Beacon container publish only when a `vX.X.X` tag resolves exactly to `main` and matches this heading plus every release package and lockfile version. It is the canonical release summary; use [the documentation index](./docs/README.md) for operational instructions and exact contracts.
 
 Beacon v0.1.0 is the first end-to-end management application built on [Drift][drift] and [Compactor][compactor].
 
@@ -19,6 +19,7 @@ Beacon v0.1.0 is the first end-to-end management application built on [Drift][dr
 - A composed Next.js 16 and React 19 interface with focused screen and presentation modules.
 - A guided-beam visual identity shared by the application and public documentation website.
 - A self-hosted Compose topology that tracks the `latest` [Drift][drift] and [Compactor][compactor] images with a 30-second redirect cache TTL.
+- Beacon containers at `ghcr.io/grey-harbor/beacon:v0.1.0` and `ghcr.io/grey-harbor/beacon:latest`; use the versioned tag for repeatable deployment and rollback.
 - Beacon is available under the [Apache License, Version 2.0](./LICENSE).
 
 ## Operational notes
