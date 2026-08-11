@@ -21,7 +21,10 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
-      - name: Verify the tag is a main release
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+      - name: Verify the tag, release metadata, and main commit
         shell: bash
         run: |
           [[ "$GITHUB_REF_TYPE" == "tag" ]]
@@ -29,6 +32,25 @@ jobs:
           tagged_commit="$(git rev-parse "${GITHUB_SHA}^{}")"
           main_commit="$(git rev-parse origin/main)"
           test "$tagged_commit" = "$main_commit"
+          expected_version="${GITHUB_REF_NAME#v}"
+          node - "$expected_version" <<'NODE'
+          const { readFileSync } = require('node:fs');
+
+          const expectedVersion = process.argv[2];
+          const packageFiles = [
+            'package.json',
+            'apps/web/package.json',
+            'packages/server/package.json',
+            'packages/shared/package.json',
+          ];
+          for (const file of packageFiles) {
+            const { version } = JSON.parse(readFileSync(file, 'utf8'));
+            if (version !== expectedVersion) {
+              throw new Error(`${file} declares ${version}, expected ${expectedVersion}`);
+            }
+          }
+          NODE
+          grep -Fx "# Beacon v${expected_version}" RELEASE.md
 
   build:
     needs: verify-release-tag
