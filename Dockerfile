@@ -1,5 +1,8 @@
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
+RUN apt-get update \
+ && apt-get install --yes --no-install-recommends python3 make g++ \
+ && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/server/package.json packages/server/package.json
